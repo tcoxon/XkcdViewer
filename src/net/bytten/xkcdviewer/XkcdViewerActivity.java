@@ -2,16 +2,18 @@ package net.bytten.xkcdviewer;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.regex.*;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnCancelListener;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
@@ -19,8 +21,11 @@ import android.webkit.WebView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.TextView.OnEditorActionListener;
 
 public class XkcdViewerActivity extends Activity {
+    
+    static class CouldntParseComicPage extends Exception {}
     
     static class ComicInfo {
 	public URL imageURL;
@@ -29,7 +34,7 @@ public class XkcdViewerActivity extends Activity {
     
     static Pattern comicPattern = Pattern.compile(
 	    "<img src=\"(http://imgs\\.xkcd\\.com/comics/.*)\" "+
-	    "title=\"(.*)\" alt=\"(.*)\" /><br/>"),
+	    "title=\"(.*)\" alt=\"(.*)\" />"),
 	   comicNumberPattern = Pattern.compile(
 		   "<h3>Permanent link to this comic: "+
 		   "http://xkcd\\.com/([0-9]+)/</h3>"); 
@@ -39,6 +44,10 @@ public class XkcdViewerActivity extends Activity {
     private Button hoverTextBtn;
     private ComicInfo comicInfo;
     private EditText comicIdSel;
+    
+    private boolean cancelLoad = false;
+    
+    private Handler handler = new Handler();
     
     /** Called when the activity is first created. */
     @Override
@@ -50,14 +59,15 @@ public class XkcdViewerActivity extends Activity {
         hoverTextBtn = (Button)findViewById(R.id.hoverTextBtn);
         comicIdSel = (EditText)findViewById(R.id.comicIdSel);
         
-        comicIdSel.setOnKeyListener(new View.OnKeyListener() {
-	    public boolean onKey(View v, int keyCode, KeyEvent event) {
-		if (keyCode == KeyEvent.KEYCODE_ENTER) {
+        comicIdSel.setOnEditorActionListener(new OnEditorActionListener() {
+	    public boolean onEditorAction(TextView v, int actionId,
+		    KeyEvent event) {
+		//if (keyCode == KeyEvent.KEYCODE_ENTER) {
 		    loadComicNumber(comicIdSel.getText().toString());
-		}
+		//}
 		return false;
 	    }
-	});
+        });
         
         hoverTextBtn.setOnTouchListener(new View.OnTouchListener() {
 	    public boolean onTouch(View v, MotionEvent event) {
@@ -110,11 +120,15 @@ public class XkcdViewerActivity extends Activity {
         loadComicNumber(null);
     }
     
-    public void failed(String reason) {
-	AlertDialog.Builder builder = new AlertDialog.Builder(this);
-	builder.setMessage("Comic loading failed: "+reason);
-	AlertDialog alert = builder.create();
-	alert.show();
+    public void failed(final String reason) {
+	handler.post(new Runnable() {
+	    public void run() {
+        	AlertDialog.Builder builder = new AlertDialog.Builder(XkcdViewerActivity.this);
+        	builder.setMessage("Comic loading failed: "+reason);
+        	AlertDialog alert = builder.create();
+        	alert.show();
+	    }
+	});
     }
     
     public int getComicNumber() {
@@ -129,27 +143,58 @@ public class XkcdViewerActivity extends Activity {
 	loadComicNumber(Integer.toString(number));
     }
     
-    public void loadComicNumber(String number) {
-	try {
-	    URL url;
-	    if (number != null) {
-		url = getComicFromNumber(number);
-	    } else {
-		url = getLastComic();
+    public void loadComicNumber(final String number) {
+
+	cancelLoad = false;
+
+	final ProgressDialog pd = ProgressDialog.show(this,
+		"XkcdViewer", "Loading comic...", true, true,
+		new OnCancelListener() {
+        	    public void onCancel(DialogInterface dialog) {
+        		cancelLoad = true;
+        	    }
+		});
+	
+	new Thread(new Runnable() {
+	    public void run() {
+        	try {
+        	    URL url;
+        	    if (number != null) {
+        		url = getComicFromNumber(number);
+        	    } else {
+        		url = getLastComic();
+        	    }
+        	    if (!cancelLoad)
+        		loadComic(url);
+        	} catch (MalformedURLException e) {
+        	    failed("Malformed URL: "+e);
+        	} catch (IOException e) {
+        	    failed("IO error: "+e);
+        	} catch (CouldntParseComicPage e) {
+        	    failed("Couldn't scrape info from the comic's HTML page");
+        	} catch (Throwable e) {
+        	    failed(e.toString());
+        	} finally {
+        	    handler.post(new Runnable() {
+        		public void run() {
+        		    pd.dismiss();
+        		}
+        	    });
+        	}
 	    }
-	    loadComic(url);
-	} catch (MalformedURLException e) {
-	    failed("Malformed URL: "+e);
-	} catch (IOException e) {
-	    failed("IO error: "+e);
-	}
+	}).start();
     }
 
-    public void loadComic(URL url) throws IOException {
+    public void loadComic(URL url) throws IOException, CouldntParseComicPage {
 	comicInfo = getComicImageURLFromPage(url);
-	webview.loadUrl(comicInfo.imageURL.toString());
-	title.setText(comicInfo.title);
-	comicIdSel.setText(comicInfo.number);
+	handler.post(new Runnable() {
+	    public void run() {
+		if (cancelLoad) return;
+        	title.setText(comicInfo.number + " - " + comicInfo.title);
+        	comicIdSel.setText(comicInfo.number);
+        	webview.loadUrl(comicInfo.imageURL.toString());
+	    }
+	});
     }
     
     public URL getComicFromNumber(String number) throws MalformedURLException {
@@ -159,14 +204,14 @@ public class XkcdViewerActivity extends Activity {
     public URL getLastComic() throws MalformedURLException {
 	return new URL("http", "xkcd.com", "/");
     }
-    public ComicInfo getComicImageURLFromPage(URL url) throws IOException {
+    public ComicInfo getComicImageURLFromPage(URL url) throws IOException, CouldntParseComicPage {
 	ComicInfo comicInfo = new ComicInfo();
 	BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream()));
 	try {
 	    String line;
 	    while ((line = br.readLine()) != null) {
 		Matcher m = comicPattern.matcher(line);
-		if (m.matches()) {
+		if (m.find()) {
 		    comicInfo.imageURL = new URL(m.group(1));
 		    comicInfo.altText = m.group(2);
 		    comicInfo.title = m.group(3);
@@ -176,6 +221,9 @@ public class XkcdViewerActivity extends Activity {
 		    comicInfo.number = m.group(1);
 		}
 	    }
+	    if (comicInfo.imageURL == null || comicInfo.altText == null
+		    || comicInfo.title == null || comicInfo.number == null)
+		throw new CouldntParseComicPage();
 	    return comicInfo;
 	} finally {
 	    br.close();
