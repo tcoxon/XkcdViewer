@@ -65,10 +65,10 @@ public class XkcdViewerActivity extends Activity {
     private WebView webview;
     private TextView title;
     private Button hoverTextBtn;
-    private ComicInfo comicInfo;
+    private ComicInfo comicInfo = new ComicInfo();
     private EditText comicIdSel;
     
-    private boolean cancelLoad = false;
+    private Thread currentLoadThread = null;
     
     private Handler handler = new Handler();
     
@@ -167,17 +167,18 @@ public class XkcdViewerActivity extends Activity {
     
     public void loadComicNumber(final String number) {
 
-	cancelLoad = false;
-
 	final ProgressDialog pd = ProgressDialog.show(this,
 		"XkcdViewer", "Loading comic...", true, true,
 		new OnCancelListener() {
         	    public void onCancel(DialogInterface dialog) {
-        		cancelLoad = true;
+        		if (currentLoadThread != null) {
+        		    // tell loading to stop
+        		    currentLoadThread.interrupt();
+        		}
         	    }
 		});
 	
-	new Thread(new Runnable() {
+	currentLoadThread = new Thread(new Runnable() {
 	    public void run() {
         	try {
         	    URL url;
@@ -186,8 +187,7 @@ public class XkcdViewerActivity extends Activity {
         	    } else {
         		url = getLastComic();
         	    }
-        	    if (!cancelLoad)
-        		loadComic(url);
+        	    loadComic(url);
         	} catch (MalformedURLException e) {
         	    failed("Malformed URL: "+e);
         	} catch (FileNotFoundException e) {
@@ -197,6 +197,8 @@ public class XkcdViewerActivity extends Activity {
         	    failed("IO error: "+e);
         	} catch (CouldntParseComicPage e) {
         	    failed("Couldn't scrape info from the comic's HTML page");
+        	} catch (InterruptedException e) {
+        	    // Do nothing. Loading was cancelled.
         	} catch (Throwable e) {
         	    failed(e.toString());
         	} finally {
@@ -207,14 +209,16 @@ public class XkcdViewerActivity extends Activity {
         	    });
         	}
 	    }
-	}).start();
+	});
+	currentLoadThread.start();
     }
 
-    public void loadComic(URL url) throws IOException, CouldntParseComicPage {
+    public void loadComic(URL url) throws IOException, CouldntParseComicPage, InterruptedException {
 	final ComicInfo _comicInfo = getComicImageURLFromPage(url);
+	// Thread.sleep(0) gives interrupts a chance to get through.
+	Thread.sleep(0);
 	handler.post(new Runnable() {
 	    public void run() {
-		if (cancelLoad) return;
 		
 		comicInfo = _comicInfo;
         	title.setText(comicInfo.number + " - " + comicInfo.title);
@@ -257,7 +261,7 @@ public class XkcdViewerActivity extends Activity {
     public URL getLastComic() throws MalformedURLException {
 	return new URL("http", "xkcd.com", "/");
     }
-    public ComicInfo getComicImageURLFromPage(URL url) throws IOException, CouldntParseComicPage {
+    public ComicInfo getComicImageURLFromPage(URL url) throws InterruptedException, IOException, CouldntParseComicPage {
 	ComicInfo comicInfo = new ComicInfo();
 	BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream()));
 	try {
@@ -273,6 +277,8 @@ public class XkcdViewerActivity extends Activity {
 		if (m.find()) {
 		    comicInfo.number = m.group(1);
 		}
+		// Thread.sleep(0) gives interrupts a chance to get through.
+		Thread.sleep(0);
 	    }
 	    if (comicInfo.imageURL == null || comicInfo.altText == null
 		    || comicInfo.title == null || comicInfo.number == null)
