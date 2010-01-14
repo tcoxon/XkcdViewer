@@ -20,6 +20,7 @@
 package net.bytten.xkcdviewer;
 
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
@@ -33,10 +34,13 @@ import android.content.DialogInterface;
 import android.content.DialogInterface.OnCancelListener;
 import android.os.Bundle;
 import android.os.Handler;
+import android.text.InputType;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
+import android.webkit.WebChromeClient;
 import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -48,12 +52,12 @@ public class XkcdViewerActivity extends Activity {
     
     static class ComicInfo {
 	public URL imageURL;
-	public String title, altText, number;
+	public String title = "", altText = "", number = "1";
     }
     
     static Pattern comicPattern = Pattern.compile(
-	    "<img src=\"(http://imgs\\.xkcd\\.com/comics/.*)\" "+
-	    "title=\"(.*)\" alt=\"(.*)\" />"),
+	    "<img src=\"(http://[^\"]*imgs\\.xkcd\\.com/comics/[^\"]*)\" "+
+	    "title=\"([^\"]*)\" alt=\"([^\"]*)\" />"),
 	   comicNumberPattern = Pattern.compile(
 		   "<h3>Permanent link to this comic: "+
 		   "http://xkcd\\.com/([0-9]+)/</h3>"); 
@@ -78,12 +82,11 @@ public class XkcdViewerActivity extends Activity {
         hoverTextBtn = (Button)findViewById(R.id.hoverTextBtn);
         comicIdSel = (EditText)findViewById(R.id.comicIdSel);
         
+        comicIdSel.setInputType(InputType.TYPE_CLASS_NUMBER);
         comicIdSel.setOnEditorActionListener(new OnEditorActionListener() {
 	    public boolean onEditorAction(TextView v, int actionId,
 		    KeyEvent event) {
-		//if (keyCode == KeyEvent.KEYCODE_ENTER) {
-		    loadComicNumber(comicIdSel.getText().toString());
-		//}
+		loadComicNumber(comicIdSel.getText().toString());
 		return false;
 	    }
         });
@@ -187,6 +190,9 @@ public class XkcdViewerActivity extends Activity {
         		loadComic(url);
         	} catch (MalformedURLException e) {
         	    failed("Malformed URL: "+e);
+        	} catch (FileNotFoundException e) {
+        	    // Comic doesn't exist. Probably went beyond the last or
+        	    // before the first.
         	} catch (IOException e) {
         	    failed("IO error: "+e);
         	} catch (CouldntParseComicPage e) {
@@ -205,12 +211,40 @@ public class XkcdViewerActivity extends Activity {
     }
 
     public void loadComic(URL url) throws IOException, CouldntParseComicPage {
-	comicInfo = getComicImageURLFromPage(url);
+	final ComicInfo _comicInfo = getComicImageURLFromPage(url);
 	handler.post(new Runnable() {
 	    public void run() {
 		if (cancelLoad) return;
+		
+		comicInfo = _comicInfo;
         	title.setText(comicInfo.number + " - " + comicInfo.title);
         	comicIdSel.setText(comicInfo.number);
+        	
+        	webview.clearView();
+        	final ProgressDialog pd = ProgressDialog.show(
+        		XkcdViewerActivity.this,
+        		"XkcdViewer", "Loading comic image...", false, true,
+        		new OnCancelListener() {
+                	    public void onCancel(DialogInterface dialog) {
+                		webview.stopLoading();
+                	    }
+        		});
+        	pd.setProgress(0);
+        	webview.setWebViewClient(new WebViewClient() {
+		    @Override
+		    public void onPageFinished(WebView view, String url) {
+			super.onPageFinished(view, url);
+			
+			pd.dismiss();
+		    }
+        	});
+        	webview.setWebChromeClient(new WebChromeClient() {
+		    @Override
+		    public void onProgressChanged(WebView view, int newProgress) {
+			super.onProgressChanged(view, newProgress);
+			pd.setProgress(newProgress * 100);
+		    }
+        	});
         	webview.loadUrl(comicInfo.imageURL.toString());
 	    }
 	});
@@ -236,7 +270,7 @@ public class XkcdViewerActivity extends Activity {
 		    comicInfo.title = m.group(3);
 		}
 		m = comicNumberPattern.matcher(line);
-		if (m.matches()) {
+		if (m.find()) {
 		    comicInfo.number = m.group(1);
 		}
 	    }
