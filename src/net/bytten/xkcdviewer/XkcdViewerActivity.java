@@ -32,6 +32,7 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnCancelListener;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.InputType;
@@ -43,6 +44,7 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TableLayout;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 
@@ -71,17 +73,17 @@ public class XkcdViewerActivity extends Activity {
     private Thread currentLoadThread = null;
     
     private Handler handler = new Handler();
-    
-    /** Called when the activity is first created. */
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.main);
-        webview = (WebView)findViewById(R.id.viewer);
+
+    protected void resetContent() {
+	setContentView(R.layout.main);
+	webview = (WebView)findViewById(R.id.viewer);
         title = (TextView)findViewById(R.id.title);
         hoverTextBtn = (Button)findViewById(R.id.hoverTextBtn);
         comicIdSel = (EditText)findViewById(R.id.comicIdSel);
         
+        title.setText(comicInfo.title);
+        
+        comicIdSel.setText(comicInfo.number);
         comicIdSel.setInputType(InputType.TYPE_CLASS_NUMBER);
         comicIdSel.setOnEditorActionListener(new OnEditorActionListener() {
 	    public boolean onEditorAction(TextView v, int actionId,
@@ -138,8 +140,22 @@ public class XkcdViewerActivity extends Activity {
 		return false;
 	    }
         });
+    }
+    
+    /** Called when the activity is first created. */
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        resetContent();
         
         loadComicNumber(null);
+    }
+    
+    @Override
+    public void onConfigurationChanged(Configuration conf) {
+	super.onConfigurationChanged(conf);
+	// Overrode this so we can catch keyboardHidden|orientation conf changes
+	// do nothing prevents activity destruction.
     }
     
     public void failed(final String reason) {
