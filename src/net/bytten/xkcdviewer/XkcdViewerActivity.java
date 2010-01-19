@@ -81,6 +81,8 @@ public class XkcdViewerActivity extends Activity {
         hoverTextBtn = (Button)findViewById(R.id.hoverTextBtn);
         comicIdSel = (EditText)findViewById(R.id.comicIdSel);
         
+        webview.requestFocus();
+        
         title.setText(comicInfo.title);
         
         comicIdSel.setText(comicInfo.number);
