@@ -36,16 +36,19 @@ import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.InputType;
+import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 
@@ -63,7 +66,13 @@ public class XkcdViewerActivity extends Activity {
 	    "title=\"([^\"]*)\" alt=\"([^\"]*)\" />"),
 	   comicNumberPattern = Pattern.compile(
 		   "<h3>Permanent link to this comic: "+
-		   "http://xkcd\\.com/([0-9]+)/</h3>"); 
+		   "http://xkcd\\.com/([0-9]+)/</h3>");
+    
+    private static final FrameLayout.LayoutParams ZOOM_PARAMS =
+	    new FrameLayout.LayoutParams(
+	      ViewGroup.LayoutParams.FILL_PARENT,
+	      ViewGroup.LayoutParams.WRAP_CONTENT,
+	      Gravity.BOTTOM);
     
     public static final int MENU_HOVER_TEXT = 0,
     			    MENU_REFRESH = 1,
@@ -85,6 +94,9 @@ public class XkcdViewerActivity extends Activity {
         comicIdSel = (EditText)findViewById(R.id.comicIdSel);
         
         webview.requestFocus();
+        final View zoom = webview.getZoomControls();
+        ((ViewGroup)webview.getParent().getParent()).addView(zoom, ZOOM_PARAMS);
+        zoom.setVisibility(View.GONE);
         
         title.setText(comicInfo.title);
         
@@ -97,18 +109,6 @@ public class XkcdViewerActivity extends Activity {
 		return false;
 	    }
         });
-        
-        /*hoverTextBtn.setOnTouchListener(new View.OnTouchListener() {
-	    public boolean onTouch(View v, MotionEvent event) {
-		if (event.getAction() == MotionEvent.ACTION_UP) {
-      		    AlertDialog.Builder builder = new AlertDialog.Builder(XkcdViewerActivity.this);
-      		    builder.setMessage(comicInfo.altText);
-      		    AlertDialog alert = builder.create();
-      		    alert.show();
-		}
-		return false;
-	    }
-        });*/
         
         ((Button)findViewById(R.id.firstBtn)).setOnTouchListener(new View.OnTouchListener() {
 	    public boolean onTouch(View v, MotionEvent event) {
