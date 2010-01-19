@@ -10,18 +10,21 @@
 		android:layout_height="wrap_content">
 		<TableRow android:gravity="center">
 		<Button android:text="&lt;&lt;" android:id="@+id/firstBtn"
+			android:layout_weight="1"
 			android:layout_width="wrap_content" android:layout_height="wrap_content" />
 		<Button android:text="&lt;" android:id="@+id/prevBtn"
+			android:layout_weight="1"
 			android:layout_width="wrap_content" android:layout_height="wrap_content" />
 		<EditText android:hint="Comic #" android:id="@+id/comicIdSel"
+			android:layout_weight="1"
 			android:singleLine="true"
 			android:imeOptions="actionGo"
 			android:layout_width="wrap_content" android:layout_height="wrap_content" />
 		<Button android:text="&gt;" android:id="@+id/nextBtn"
+			android:layout_weight="1"
 			android:layout_width="wrap_content" android:layout_height="wrap_content" />
 		<Button android:text="&gt;&gt;" android:id="@+id/lastBtn"
-			android:layout_width="wrap_content" android:layout_height="wrap_content" />
-		<Button android:text="Hover Text" android:id="@+id/hoverTextBtn"
+			android:layout_weight="1"
 			android:layout_width="wrap_content" android:layout_height="wrap_content" />
 		</TableRow>
 	</TableLayout>

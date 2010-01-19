@@ -37,6 +37,8 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.text.InputType;
 import android.view.KeyEvent;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.webkit.WebChromeClient;
@@ -44,7 +46,6 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.TableLayout;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 
@@ -64,9 +65,11 @@ public class XkcdViewerActivity extends Activity {
 		   "<h3>Permanent link to this comic: "+
 		   "http://xkcd\\.com/([0-9]+)/</h3>"); 
     
+    public static final int MENU_HOVER_TEXT = 0;
+    public static final int MENU_REFRESH = 1;
+    
     private WebView webview;
     private TextView title;
-    private Button hoverTextBtn;
     private ComicInfo comicInfo = new ComicInfo();
     private EditText comicIdSel;
     
@@ -78,7 +81,6 @@ public class XkcdViewerActivity extends Activity {
 	setContentView(R.layout.main);
 	webview = (WebView)findViewById(R.id.viewer);
         title = (TextView)findViewById(R.id.title);
-        hoverTextBtn = (Button)findViewById(R.id.hoverTextBtn);
         comicIdSel = (EditText)findViewById(R.id.comicIdSel);
         
         webview.requestFocus();
@@ -95,7 +97,7 @@ public class XkcdViewerActivity extends Activity {
 	    }
         });
         
-        hoverTextBtn.setOnTouchListener(new View.OnTouchListener() {
+        /*hoverTextBtn.setOnTouchListener(new View.OnTouchListener() {
 	    public boolean onTouch(View v, MotionEvent event) {
 		if (event.getAction() == MotionEvent.ACTION_UP) {
       		    AlertDialog.Builder builder = new AlertDialog.Builder(XkcdViewerActivity.this);
@@ -105,7 +107,7 @@ public class XkcdViewerActivity extends Activity {
 		}
 		return false;
 	    }
-        });
+        });*/
         
         ((Button)findViewById(R.id.firstBtn)).setOnTouchListener(new View.OnTouchListener() {
 	    public boolean onTouch(View v, MotionEvent event) {
@@ -160,6 +162,33 @@ public class XkcdViewerActivity extends Activity {
 	// do nothing prevents activity destruction.
     }
     
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+	menu.add(0, MENU_HOVER_TEXT, 0, "Hover Text");
+	menu.add(0, MENU_REFRESH, 0, "Refresh");
+	return true;
+    }
+    
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+	switch (item.getItemId()) {
+	case MENU_HOVER_TEXT:
+	    showHoverText();
+	    return true;
+	case MENU_REFRESH:
+	    loadComicNumber(comicInfo.number);
+	    return true;
+	}
+	return false;
+    }
+    
+    public void showHoverText() {
+	AlertDialog.Builder builder = new AlertDialog.Builder(XkcdViewerActivity.this);
+      	builder.setMessage(comicInfo.altText);
+      	AlertDialog alert = builder.create();
+      	alert.show();
+    }
+
     public void failed(final String reason) {
 	handler.post(new Runnable() {
 	    public void run() {
