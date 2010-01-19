@@ -65,8 +65,9 @@ public class XkcdViewerActivity extends Activity {
 		   "<h3>Permanent link to this comic: "+
 		   "http://xkcd\\.com/([0-9]+)/</h3>"); 
     
-    public static final int MENU_HOVER_TEXT = 0;
-    public static final int MENU_REFRESH = 1;
+    public static final int MENU_HOVER_TEXT = 0,
+    			    MENU_REFRESH = 1,
+    			    MENU_RANDOM = 2;
     
     private WebView webview;
     private TextView title;
@@ -164,6 +165,7 @@ public class XkcdViewerActivity extends Activity {
     
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
+	menu.add(0, MENU_RANDOM, 0, "Random");
 	menu.add(0, MENU_HOVER_TEXT, 0, "Hover Text");
 	menu.add(0, MENU_REFRESH, 0, "Refresh");
 	return true;
@@ -178,6 +180,9 @@ public class XkcdViewerActivity extends Activity {
 	case MENU_REFRESH:
 	    loadComicNumber(comicInfo.number);
 	    return true;
+	case MENU_RANDOM:
+	    loadComicNumber(4);   // chosen by fair dice roll.
+	    return true;	  // guaranteed to be random.
 	}
 	return false;
     }
