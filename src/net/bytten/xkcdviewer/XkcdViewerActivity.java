@@ -181,8 +181,8 @@ public class XkcdViewerActivity extends Activity {
 	    loadComicNumber(comicInfo.number);
 	    return true;
 	case MENU_RANDOM:
-	    loadComicNumber(4);   // chosen by fair dice roll.
-	    return true;	  // guaranteed to be random.
+	    loadRandomComic();
+	    return true;
 	}
 	return false;
     }
@@ -213,6 +213,15 @@ public class XkcdViewerActivity extends Activity {
 	}
     }
     
+    public void loadRandomComic() {
+	// Me 1: Hey me, this code is full of really awful hacks and spaghetti
+	//	 code. When are you going to fix it?
+	// Me 2: Meh. If my job is writing nice code, why should I do it at
+	//       home too?
+	// Me 1: And what's with these weird comments?
+	loadComicNumber("?");
+    }
+    
     public void loadComicNumber(int number) {
 	loadComicNumber(Integer.toString(number));
     }
@@ -234,10 +243,12 @@ public class XkcdViewerActivity extends Activity {
 	    public void run() {
         	try {
         	    URL url;
-        	    if (number != null) {
-        		url = getComicFromNumber(number);
-        	    } else {
+        	    if (number == null || number.equals("")) {
         		url = getLastComic();
+        	    } else if (number.equals("?")) {
+        		url = getRandomComic();
+        	    } else {
+        		url = getComicFromNumber(number);
         	    }
         	    loadComic(url);
         	} catch (MalformedURLException e) {
@@ -313,6 +324,11 @@ public class XkcdViewerActivity extends Activity {
     public URL getLastComic() throws MalformedURLException {
 	return new URL("http", "xkcd.com", "/");
     }
+    
+    public URL getRandomComic() throws MalformedURLException {
+	return new URL("http", "dynamic.xkcd.com", "/comic/random/");
+    }
+    
     public ComicInfo getComicImageURLFromPage(URL url) throws InterruptedException, IOException, CouldntParseComicPage {
 	ComicInfo comicInfo = new ComicInfo();
 	BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream()));
