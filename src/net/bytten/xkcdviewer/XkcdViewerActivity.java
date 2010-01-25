@@ -43,6 +43,7 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -88,6 +89,8 @@ public class XkcdViewerActivity extends Activity {
     private Handler handler = new Handler();
 
     protected void resetContent() {
+	requestWindowFeature(Window.FEATURE_NO_TITLE);
+	
 	setContentView(R.layout.main);
 	webview = (WebView)findViewById(R.id.viewer);
         title = (TextView)findViewById(R.id.title);
