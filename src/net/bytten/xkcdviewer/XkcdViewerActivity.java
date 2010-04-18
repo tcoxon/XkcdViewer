@@ -341,8 +341,8 @@ public class XkcdViewerActivity extends Activity {
 		Matcher m = comicPattern.matcher(line);
 		if (m.find()) {
 		    comicInfo.imageURL = new URL(m.group(1));
-		    comicInfo.altText = m.group(2);
-		    comicInfo.title = m.group(3);
+		    comicInfo.altText = htmlEntityConvert(m.group(2));
+		    comicInfo.title = htmlEntityConvert(m.group(3));
 		}
 		m = comicNumberPattern.matcher(line);
 		if (m.find()) {
@@ -358,5 +358,65 @@ public class XkcdViewerActivity extends Activity {
 	} finally {
 	    br.close();
 	}
+    }
+    
+    private static class HtmlEntity {
+	char chr;
+	String code;
+	public HtmlEntity(char chr_, String code_) {
+	    chr = chr_; code = code_;
+	}
+    }
+    
+    private final static HtmlEntity[] HTML_ENTITIES = {
+	new HtmlEntity(' ', "&nbsp;"),
+	new HtmlEntity('<', "&lt;"),
+	new HtmlEntity('>', "&gt;"),
+	new HtmlEntity('&', "&amp;"),
+	new HtmlEntity('¢', "&cent;"),
+	new HtmlEntity('£', "&pound;"),
+	new HtmlEntity('¥', "&yen;"),
+	new HtmlEntity('€', "&euro;"),
+	new HtmlEntity('§', "&sect;"),
+	new HtmlEntity('©', "&copy;"),
+	new HtmlEntity('®', "&reg;"),
+    };
+    
+    public String htmlEntityConvert(String text) {
+	StringBuilder result = new StringBuilder();
+	for (int i = 0; i < text.length(); i++) {
+	    if (text.charAt(i) == '&') {
+		boolean found = false;
+		for (HtmlEntity he: HTML_ENTITIES) {
+		    if (text.substring(i,i+he.code.length()).equals(
+			    he.code)) {
+			result.append(he.chr);
+			found = true;
+			i += he.code.length()-1;
+			break;
+		    }
+		}
+		if (!found) {
+		    if (text.charAt(i+1) == '#') {
+			int end = text.indexOf(';',i+2);
+			if (end == -1) end = text.length();
+			String num = text.substring(i+2,end);
+			try {
+			    int n = Integer.parseInt(num);
+			    result.append((char)n);
+			    found = true;
+			    i = end;
+			} catch (NumberFormatException ex) {
+			}
+		    }
+		    if (!found) {
+			result.append('&');
+		    }
+		}
+	    } else {
+		result.append(text.charAt(i));
+	    }
+	}
+	return result.toString();
     }
 }
