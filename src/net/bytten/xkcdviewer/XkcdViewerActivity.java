@@ -216,6 +216,11 @@ public class XkcdViewerActivity extends Activity {
     public void showHoverText() {
 	AlertDialog.Builder builder = new AlertDialog.Builder(XkcdViewerActivity.this);
       	builder.setMessage(comicInfo.altText);
+      	builder.setNeutralButton("Close", new DialogInterface.OnClickListener() {
+	    public void onClick(DialogInterface dialog, int which) {
+		dialog.dismiss();
+	    }
+      	});
       	AlertDialog alert = builder.create();
       	alert.show();
     }
