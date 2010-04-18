@@ -44,6 +44,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.view.View.OnTouchListener;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -100,6 +101,28 @@ public class XkcdViewerActivity extends Activity {
         final View zoom = webview.getZoomControls();
         ((ViewGroup)webview.getParent().getParent()).addView(zoom, ZOOM_PARAMS);
         zoom.setVisibility(View.GONE);
+        webview.setOnTouchListener(new OnTouchListener() {
+
+            float x, y;
+            
+	    public boolean onTouch(View v, MotionEvent event) {
+		if (event.getAction() == MotionEvent.ACTION_DOWN) {
+		    x = event.getX();
+		    y = event.getY();
+		} else
+		if (event.getAction() == MotionEvent.ACTION_UP &&
+			!moved(event)) {
+		    showHoverText();
+		}
+		return false;
+	    }
+            
+	    private boolean moved(MotionEvent event) {
+		return Math.abs(event.getX()-x) > 10.0 ||
+			Math.abs(event.getY()-y) > 10.0;
+	    }
+	    
+        });
         
         title.setText(comicInfo.title);
         
