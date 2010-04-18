@@ -23,6 +23,7 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.regex.*;
@@ -356,8 +357,10 @@ public class XkcdViewerActivity extends Activity {
 	return new URL("http", "xkcd.com", "/");
     }
     
-    public URL getRandomComic() throws MalformedURLException {
-	return new URL("http", "dynamic.xkcd.com", "/comic/random/");
+    public URL getRandomComic() throws IOException {
+	HttpURLConnection http = (HttpURLConnection) new URL("http",
+		"dynamic.xkcd.com", "/random/comic/").openConnection();
+	return new URL(http.getHeaderField("Location"));
     }
     
     public ComicInfo getComicImageURLFromPage(URL url) throws InterruptedException, IOException, CouldntParseComicPage {
