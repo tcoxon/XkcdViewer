@@ -273,8 +273,8 @@ public class XkcdViewerActivity extends Activity {
 	
 	currentLoadThread = new Thread(new Runnable() {
 	    public void run() {
+		URL url = null;
         	try {
-        	    URL url;
         	    if (number == null || number.equals("")) {
         		url = getLastComic();
         	    } else if (number.equals("?")) {
@@ -419,8 +419,8 @@ public class XkcdViewerActivity extends Activity {
 	    if (text.charAt(i) == '&') {
 		boolean found = false;
 		for (HtmlEntity he: HTML_ENTITIES) {
-		    if (text.substring(i,i+he.code.length()).equals(
-			    he.code)) {
+		    if (i+he.code.length() <= text.length() &&
+			    text.substring(i,i+he.code.length()).equals(he.code)) {
 			result.append(he.chr);
 			found = true;
 			i += he.code.length()-1;
@@ -428,7 +428,7 @@ public class XkcdViewerActivity extends Activity {
 		    }
 		}
 		if (!found) {
-		    if (text.charAt(i+1) == '#') {
+		    if (i+2 < text.length() && text.charAt(i+1) == '#') {
 			int end = text.indexOf(';',i+2);
 			if (end == -1) end = text.length();
 			String num = text.substring(i+2,end);
