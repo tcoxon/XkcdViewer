@@ -32,8 +32,10 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.DialogInterface.OnCancelListener;
 import android.content.res.Configuration;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.InputType;
@@ -79,7 +81,8 @@ public class XkcdViewerActivity extends Activity {
     
     public static final int MENU_HOVER_TEXT = 0,
     			    MENU_REFRESH = 1,
-    			    MENU_RANDOM = 2;
+    			    MENU_RANDOM = 2,
+    			    MENU_SHARE = 3;
     
     private WebView webview;
     private TextView title;
@@ -195,6 +198,7 @@ public class XkcdViewerActivity extends Activity {
 	menu.add(0, MENU_RANDOM, 0, "Random");
 	menu.add(0, MENU_HOVER_TEXT, 0, "Hover Text");
 	menu.add(0, MENU_REFRESH, 0, "Refresh");
+	menu.add(0, MENU_SHARE, 0, "Share");
 	return true;
     }
     
@@ -210,8 +214,22 @@ public class XkcdViewerActivity extends Activity {
 	case MENU_RANDOM:
 	    loadRandomComic();
 	    return true;
+	case MENU_SHARE:
+	    shareComic();
+	    return true;
 	}
 	return false;
+    }
+    
+    public void shareComic() {
+	Intent intent = new Intent(Intent.ACTION_SEND, null);
+	intent.setType("text/plain");
+	intent.putExtra(Intent.EXTRA_TEXT, getCurrentComicUrl());
+	startActivity(Intent.createChooser(intent, "Share comic..."));
+    }
+    
+    public String getCurrentComicUrl() {
+	return "http://xkcd.com/"+comicInfo.number+"/";
     }
     
     public void showHoverText() {
