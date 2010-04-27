@@ -139,39 +139,27 @@ public class XkcdViewerActivity extends Activity {
 	    }
         });
         
-        ((Button)findViewById(R.id.firstBtn)).setOnTouchListener(new View.OnTouchListener() {
-	    public boolean onTouch(View v, MotionEvent event) {
-		if (event.getAction() == MotionEvent.ACTION_UP) {
-		    loadComicNumber("1");
-		}
-		return false;
+        ((Button)findViewById(R.id.firstBtn)).setOnClickListener(new View.OnClickListener() {
+	    public void onClick(View v) {
+		loadComicNumber("1");
 	    }
         });
         
-        ((Button)findViewById(R.id.prevBtn)).setOnTouchListener(new View.OnTouchListener() {
-	    public boolean onTouch(View v, MotionEvent event) {
-		if (event.getAction() == MotionEvent.ACTION_UP) {
-		    loadComicNumber(getComicNumber()-1);
-		}
-		return false;
+        ((Button)findViewById(R.id.prevBtn)).setOnClickListener(new View.OnClickListener() {
+	    public void onClick(View v) {
+		loadComicNumber(getComicNumber()-1);
 	    }
         });
         
-        ((Button)findViewById(R.id.nextBtn)).setOnTouchListener(new View.OnTouchListener() {
-	    public boolean onTouch(View v, MotionEvent event) {
-		if (event.getAction() == MotionEvent.ACTION_UP) {
-		    loadComicNumber(getComicNumber()+1);
-		}
-		return false;
+        ((Button)findViewById(R.id.nextBtn)).setOnClickListener(new View.OnClickListener() {
+	    public void onClick(View v) {
+		loadComicNumber(getComicNumber()+1);
 	    }
         });
         
-        ((Button)findViewById(R.id.lastBtn)).setOnTouchListener(new View.OnTouchListener() {
-	    public boolean onTouch(View v, MotionEvent event) {
-		if (event.getAction() == MotionEvent.ACTION_UP) {
-		    loadComicNumber(null);
-		}
-		return false;
+        ((Button)findViewById(R.id.lastBtn)).setOnClickListener(new View.OnClickListener() {
+	    public void onClick(View v) {
+		loadComicNumber(null);
 	    }
         });
     }
