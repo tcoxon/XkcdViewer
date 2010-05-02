@@ -20,8 +20,11 @@
 package net.bytten.xkcdviewer;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -35,6 +38,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.DialogInterface.OnCancelListener;
 import android.content.res.Configuration;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.InputType;
@@ -54,6 +58,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.TextView.OnEditorActionListener;
 
 public class XkcdViewerActivity extends Activity {
@@ -81,7 +86,8 @@ public class XkcdViewerActivity extends Activity {
     public static final int MENU_HOVER_TEXT = 0,
     			    MENU_REFRESH = 1,
     			    MENU_RANDOM = 2,
-    			    MENU_SHARE = 3;
+    			    MENU_SHARE_LINK = 3,
+    			    MENU_SHARE_IMAGE = 4;
     
     private WebView webview;
     private TextView title;
@@ -185,7 +191,8 @@ public class XkcdViewerActivity extends Activity {
 	menu.add(0, MENU_RANDOM, 0, "Random");
 	menu.add(0, MENU_HOVER_TEXT, 0, "Hover Text");
 	menu.add(0, MENU_REFRESH, 0, "Refresh");
-	menu.add(0, MENU_SHARE, 0, "Share");
+	menu.add(0, MENU_SHARE_LINK, 0, "Share Link...");
+	menu.add(0, MENU_SHARE_IMAGE, 0, "Share Image...");
 	return true;
     }
     
@@ -201,18 +208,119 @@ public class XkcdViewerActivity extends Activity {
 	case MENU_RANDOM:
 	    loadRandomComic();
 	    return true;
-	case MENU_SHARE:
-	    shareComic();
+	case MENU_SHARE_LINK:
+	    shareComicLink();
+	    return true;
+	case MENU_SHARE_IMAGE:
+	    shareComicImage();
 	    return true;
 	}
 	return false;
     }
     
-    public void shareComic() {
+    public void shareComicLink() {
 	Intent intent = new Intent(Intent.ACTION_SEND, null);
 	intent.setType("text/plain");
 	intent.putExtra(Intent.EXTRA_TEXT, getCurrentComicUrl());
-	startActivity(Intent.createChooser(intent, "Share comic..."));
+	startActivity(Intent.createChooser(intent, "Share Link..."));
+    }
+    
+    public static interface ImageAttachmentReceiver {
+        public void receive(File file);
+        public void error(Exception ex);
+        public void finish();
+        public void cancel();
+    }
+    
+    public void shareComicImage() {
+	if (comicInfo != null && comicInfo.imageURL != null) {
+	    final Thread[] saveThread = new Thread[1];
+	    
+            final ProgressDialog pd = ProgressDialog.show(this,
+                    "XkcdViewer", "Saving Image...", true, true,
+                    new OnCancelListener() {
+                        public void onCancel(DialogInterface dialog) {
+                            if (saveThread[0] != null) {
+                                // tell loading to stop
+                                saveThread[0].interrupt();
+                            }
+                        }
+                    });
+
+            saveThread[0] = imageAttachment(comicInfo.imageURL,
+	        new ImageAttachmentReceiver() {
+                public void finish() {
+                    handler.post(new Runnable() {
+                        public void run() {
+                            pd.dismiss();
+                        }
+                    });
+                }
+	        public void receive(final File file) {
+	            handler.post(new Runnable() {
+	                public void run() {
+	                    Uri uri = Uri.fromFile(file);
+                            Intent intent = new Intent(Intent.ACTION_SEND, null);
+                            intent.setType("image/png");
+                            intent.putExtra(Intent.EXTRA_STREAM, uri);
+                            startActivity(Intent.createChooser(intent, "Share Image..."));
+	                }
+	            });
+	        }
+	        public void error(final Exception ex) {
+	            failed("Couldn't save attachment: "+ex);
+	        }
+	        public void cancel() {
+	            handler.post(new Runnable() {
+	                public void run() {
+        	            Toast.makeText(XkcdViewerActivity.this,
+        	                    "Canceled image sharing.",
+        	                    Toast.LENGTH_SHORT).show();
+	                }
+	            });
+	        }
+	    });
+	    
+	} else {
+	    Toast.makeText(this, "No image loaded.", Toast.LENGTH_SHORT).show(); 
+	}
+    }
+    
+    public Thread imageAttachment(final URL imageURL, final ImageAttachmentReceiver r) {
+        Thread t = new Thread() {
+            public void run() {
+                FileOutputStream fos = null;
+                InputStream is = null;
+                try {
+                    File file = File.createTempFile("xkcd-attachment-", ".png");
+                    fos = new FileOutputStream(file);
+                    is = imageURL.openStream();
+                    
+                    byte[] buffer = new byte[512];
+                    int count = -1;
+                    while ((count = is.read(buffer)) != -1) {
+                        fos.write(buffer, 0, count);
+                        Thread.sleep(0); // Give a chance for thread interrupts to get through
+                    }
+                    
+                    r.finish();
+                    r.receive(file);
+                } catch (InterruptedException ex) {
+                    r.finish();
+                    r.cancel();
+                } catch (IOException ex) {
+                    r.finish();
+                    r.error(ex);
+                } finally {
+                    try {
+                        if (fos != null) fos.close();
+                        if (is != null) is.close();
+                    } catch (IOException ex) {}
+                }
+            }
+        };
+        t.start();
+        return t;
     }
     
     public String getCurrentComicUrl() {
@@ -251,11 +359,6 @@ public class XkcdViewerActivity extends Activity {
     }
     
     public void loadRandomComic() {
-	// Me 1: Hey me, this code is full of really awful hacks and spaghetti
-	//	 code. When are you going to fix it?
-	// Me 2: Meh. If my job is writing nice code, why should I do it at
-	//       home too?
-	// Me 1: And what's with these weird comments?
 	loadComicNumber("?");
     }
     
