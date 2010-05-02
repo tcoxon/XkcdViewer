@@ -18,7 +18,11 @@
             </intent-filter>
         </activity>
 
-    </application>
+    <activity
+      android:name=".SettingsActivity"
+      android:label="XkcdViewer Settings">
+    </activity>
+</application>
     <uses-sdk android:minSdkVersion="3" />
 
 </manifest> 

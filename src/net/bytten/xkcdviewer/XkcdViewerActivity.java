@@ -36,11 +36,14 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.DialogInterface.OnCancelListener;
+import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.preference.PreferenceManager;
 import android.text.InputType;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -87,12 +90,17 @@ public class XkcdViewerActivity extends Activity {
     			    MENU_REFRESH = 1,
     			    MENU_RANDOM = 2,
     			    MENU_SHARE_LINK = 3,
-    			    MENU_SHARE_IMAGE = 4;
+    			    MENU_SHARE_IMAGE = 4,
+    			    MENU_SETTINGS = 5;
+    
+    public static final int ACTION_POINTER_DOWN = 5;
     
     private WebView webview;
     private TextView title;
     private ComicInfo comicInfo = new ComicInfo();
     private EditText comicIdSel;
+    
+    private View zoom = null;
     
     private Thread currentLoadThread = null;
     
@@ -107,9 +115,8 @@ public class XkcdViewerActivity extends Activity {
         comicIdSel = (EditText)findViewById(R.id.comicIdSel);
         
         webview.requestFocus();
-        final View zoom = webview.getZoomControls();
-        ((ViewGroup)webview.getParent().getParent()).addView(zoom, ZOOM_PARAMS);
-        zoom.setVisibility(View.GONE);
+        zoom = webview.getZoomControls();
+        resetZoomControlEnable();
         webview.setOnTouchListener(new OnTouchListener() {
 
             float x, y;
@@ -125,12 +132,22 @@ public class XkcdViewerActivity extends Activity {
 		}
 		return false;
 	    }
-            
+	                
 	    private boolean moved(MotionEvent event) {
 		return Math.abs(event.getX()-x) > 10.0 ||
 			Math.abs(event.getY()-y) > 10.0;
 	    }
 	    
+        });
+        
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        prefs.registerOnSharedPreferenceChangeListener(new OnSharedPreferenceChangeListener() {
+            public void onSharedPreferenceChanged(
+                    SharedPreferences sharedPreferences, String key) {
+                if (key.equals("useZoomControls")) {
+                    resetZoomControlEnable();
+                }
+            }
         });
         
         title.setText(comicInfo.title);
@@ -170,6 +187,21 @@ public class XkcdViewerActivity extends Activity {
         });
     }
     
+    public void resetZoomControlEnable() {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        boolean value = prefs.getBoolean("useZoomControls",true);
+        setZoomControlEnable(value);
+    }
+    
+    public void setZoomControlEnable(boolean b) {
+        ViewGroup zoomParent = (ViewGroup)webview.getParent().getParent();
+        if (zoom.getParent() == zoomParent) zoomParent.removeView(zoom);
+        if (b) {
+            zoomParent.addView(zoom, ZOOM_PARAMS);
+            zoom.setVisibility(View.GONE);
+        }
+    }
+    
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -193,6 +225,7 @@ public class XkcdViewerActivity extends Activity {
 	menu.add(0, MENU_REFRESH, 0, "Refresh");
 	menu.add(0, MENU_SHARE_LINK, 0, "Share Link...");
 	menu.add(0, MENU_SHARE_IMAGE, 0, "Share Image...");
+	menu.add(0, MENU_SETTINGS, 0, "Settings...");
 	return true;
     }
     
@@ -214,8 +247,16 @@ public class XkcdViewerActivity extends Activity {
 	case MENU_SHARE_IMAGE:
 	    shareComicImage();
 	    return true;
+	case MENU_SETTINGS:
+	    showSettings();
+	    return true;
 	}
 	return false;
+    }
+    
+    public void showSettings() {
+        Intent intent = new Intent(this, SettingsActivity.class);
+        startActivity(intent);
     }
     
     public void shareComicLink() {
