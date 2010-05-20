@@ -115,13 +115,14 @@ public class XkcdViewerActivity extends Activity {
             float x, y;
             
 	    public boolean onTouch(View v, MotionEvent event) {
-		if (event.getAction() == MotionEvent.ACTION_DOWN) {
+		switch (event.getAction()) {
+		case MotionEvent.ACTION_DOWN:
 		    x = event.getX();
 		    y = event.getY();
-		} else
-		if (event.getAction() == MotionEvent.ACTION_UP &&
-			!moved(event)) {
-		    showHoverText();
+		    break;
+		case MotionEvent.ACTION_UP:
+		    if (!moved(event)) showHoverText();
+		    break;
 		}
 		return false;
 	    }
