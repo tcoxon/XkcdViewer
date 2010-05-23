@@ -119,42 +119,8 @@ public class XkcdViewerActivity extends Activity {
         comicIdSel = (EditText)findViewById(R.id.comicIdSel);
 
         webview.requestFocus();
-        /*zoom = webview.getZoomControls();
-        resetZoomControlEnable();
-        webview.setOnTouchListener(new OnTouchListener() {
-
-            float x, y;
-            
-	    public boolean onTouch(View v, MotionEvent event) {
-		if (event.getAction() == MotionEvent.ACTION_DOWN) {
-		    x = event.getX();
-		    y = event.getY();
-		} else
-		if (event.getAction() == MotionEvent.ACTION_UP &&
-			!moved(event)) {
-		    showHoverText();
-		}
-		return false;
-	    }
-	                
-	    private boolean moved(MotionEvent event) {
-		return Math.abs(event.getX()-x) > 10.0 ||
-			Math.abs(event.getY()-y) > 10.0;
-	    }
-	    
-        });
+        zoom = webview.getZoomControls();
         
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        prefs.registerOnSharedPreferenceChangeListener(new OnSharedPreferenceChangeListener() {
-            public void onSharedPreferenceChanged(
-                    SharedPreferences sharedPreferences, String key) {
-                if (key.equals("useZoomControls")) {
-                    resetZoomControlEnable();
-                }
-            }
-        });*/
-        
-        webview.getSettings().setBuiltInZoomControls(true);
         webview.setClickable(true);
         webview.setOnClickListener(new OnClickListener() {
             public void onClick(View v) {
@@ -200,15 +166,16 @@ public class XkcdViewerActivity extends Activity {
     }
     
     public void resetZoomControlEnable() {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        boolean value = prefs.getBoolean("useZoomControls",true);
+        final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        final boolean value = prefs.getBoolean("useZoomControls",!isIncredible());
         setZoomControlEnable(value);
     }
     
     public void setZoomControlEnable(boolean b) {
-        ViewGroup zoomParent = (ViewGroup)webview.getParent().getParent();
+        final ViewGroup zoomParent = (ViewGroup)webview.getParent().getParent();
         if (zoom.getParent() == zoomParent) zoomParent.removeView(zoom);
-        if (b) {
+        webview.getSettings().setBuiltInZoomControls(b);
+        if (!b) {
             zoomParent.addView(zoom, ZOOM_PARAMS);
             zoom.setVisibility(View.GONE);
         }
@@ -221,6 +188,12 @@ public class XkcdViewerActivity extends Activity {
         resetContent();
 
         loadComicNumber(null);
+    }
+    
+    @Override
+    public void onResume() {
+        super.onResume();
+        resetZoomControlEnable();
     }
 
     @Override
@@ -245,7 +218,7 @@ public class XkcdViewerActivity extends Activity {
         }
     }
     
-    private boolean isIncredible() {
+    public static boolean isIncredible() {
         return Build.MODEL.toLowerCase().contains("incredible") ||
             Build.MODEL.toLowerCase().contains("adr6300");
     }
