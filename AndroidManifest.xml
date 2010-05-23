@@ -20,7 +20,7 @@
 
     <activity
       android:name=".SettingsActivity"
-      android:label="XkcdViewer Settings">
+      android:label="XkcdViewer Preferences">
     </activity>
 </application>
     <uses-sdk android:minSdkVersion="3" />

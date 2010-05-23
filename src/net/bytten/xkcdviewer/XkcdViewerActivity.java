@@ -256,7 +256,7 @@ public class XkcdViewerActivity extends Activity {
         menu.add(0, MENU_REFRESH, 0, "Refresh");
         menu.add(0, MENU_SHARE_LINK, 0, "Share Link...");
         menu.add(0, MENU_SHARE_IMAGE, 0, "Share Image...");
-        menu.add(0, MENU_SETTINGS, 0, "Settings...");
+        menu.add(0, MENU_SETTINGS, 0, "Preferences...");
         if (debuggable())
             menu.add(0, MENU_DEBUG, 0, "Debug");
         return true;
