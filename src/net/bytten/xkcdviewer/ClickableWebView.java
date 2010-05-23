@@ -45,7 +45,7 @@ public class ClickableWebView extends WebView {
             }
         }
 
-        return consumed || isClickable();
+        return consumed;
     }
 
 }
