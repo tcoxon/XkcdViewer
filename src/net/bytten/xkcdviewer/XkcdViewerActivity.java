@@ -37,11 +37,15 @@ import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.DialogInterface.OnCancelListener;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.InputType;
+import android.util.Config;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -73,11 +77,14 @@ public class XkcdViewerActivity extends Activity {
             "<h3>Permanent link to this comic: "+
     "http://xkcd\\.com/([0-9]+)/</h3>");
 
+    public static final String PACKAGE_NAME = "net.bytten.xkcdviewer";
+    
     public static final int MENU_HOVER_TEXT = 0,
     MENU_REFRESH = 1,
     MENU_RANDOM = 2,
     MENU_SHARE_LINK = 3,
-    MENU_SHARE_IMAGE = 4;
+    MENU_SHARE_IMAGE = 4,
+    MENU_DEBUG = 10;
 
     private WebView webview;
     private TextView title;
@@ -159,6 +166,26 @@ public class XkcdViewerActivity extends Activity {
         // do nothing prevents activity destruction.
     }
 
+    private void toast(String msg) {
+        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+    }
+    
+    private boolean debuggable() {
+        final PackageManager pm = getPackageManager();
+        try {
+            final ApplicationInfo app = pm.getApplicationInfo(PACKAGE_NAME, 0);
+            final boolean debuggable = (app.flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0;
+            return debuggable;
+        } catch (PackageManager.NameNotFoundException ex) {
+            return false;
+        }
+    }
+    
+    private boolean isIncredible() {
+        return Build.MODEL.toLowerCase().contains("incredible") ||
+            Build.MODEL.toLowerCase().contains("adr6300");
+    }
+    
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         menu.add(0, MENU_RANDOM, 0, "Random");
@@ -166,6 +193,8 @@ public class XkcdViewerActivity extends Activity {
         menu.add(0, MENU_REFRESH, 0, "Refresh");
         menu.add(0, MENU_SHARE_LINK, 0, "Share Link...");
         menu.add(0, MENU_SHARE_IMAGE, 0, "Share Image...");
+        if (debuggable())
+            menu.add(0, MENU_DEBUG, 0, "Debug");
         return true;
     }
 
@@ -186,6 +215,9 @@ public class XkcdViewerActivity extends Activity {
             return true;
         case MENU_SHARE_IMAGE:
             shareComicImage();
+            return true;
+        case MENU_DEBUG:
+            toast("Build.MODEL: \""+Build.MODEL+"\"");
             return true;
         }
         return false;
