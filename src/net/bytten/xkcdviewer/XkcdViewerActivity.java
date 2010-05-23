@@ -246,7 +246,8 @@ public class XkcdViewerActivity extends Activity {
     }
     
     private boolean isIncredible() {
-        return Build.MODEL.toLowerCase().contains("incredible");
+        return Build.MODEL.toLowerCase().contains("incredible") ||
+            Build.MODEL.toLowerCase().contains("adr6300");
     }
     
     @Override
