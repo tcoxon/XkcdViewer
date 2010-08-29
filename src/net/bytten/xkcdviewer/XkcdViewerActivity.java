@@ -77,11 +77,15 @@ public class XkcdViewerActivity extends Activity {
     }
 
     static Pattern comicPattern = Pattern.compile(
-            "<img src=\"(http://[^\"]*imgs\\.xkcd\\.com/comics/[^\"]*)\" "+
-    "title=\"([^\"]*)\" alt=\"([^\"]*)\" />"),
-    comicNumberPattern = Pattern.compile(
-            "<h3>Permanent link to this comic: "+
-    "http://xkcd\\.com/([0-9]+)/</h3>");
+                       "<img src=\"(http://[^\"]*imgs\\.xkcd\\.com/comics/[^\"]*)\" "+
+                       "title=\"([^\"]*)\" alt=\"([^\"]*)\" />"),
+                   comicNumberPattern = Pattern.compile(
+                       "<h3>Permanent link to this comic: "+
+                       "http://xkcd\\.com/([0-9]+)/</h3>"),
+                   xkcdHomePattern = Pattern.compile(
+                       "http://(www\\.)?xkcd\\.com(/)?"),
+                   comicUrlPattern = Pattern.compile(
+                       "http://(www\\.)?xkcd\\.com/([0-9]+)(/)?");
     
     public static final FrameLayout.LayoutParams ZOOM_PARAMS =
         new FrameLayout.LayoutParams(
@@ -186,8 +190,29 @@ public class XkcdViewerActivity extends Activity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         resetContent();
-
-        loadComicNumber(null);
+        
+        final Intent i = this.getIntent();
+        if (i.hasCategory(Intent.CATEGORY_BROWSABLE)) {
+            // Link to comic
+            Matcher m = comicUrlPattern.matcher(i.getDataString());
+            if (m.matches()) {
+                loadComicNumber(m.group(2));
+            } else {
+                // it wasn't a link to comic
+                m = xkcdHomePattern.matcher(i.getDataString());
+                // last ditch attempt: was it a link to the home page?
+                if (m.matches()) {
+                    loadComicNumber(null);
+                } else {
+                    Toast.makeText(this, "XkcdViewer can't display this content.",
+                            Toast.LENGTH_SHORT).show();
+                    this.finish();
+                }
+            }
+        } else {
+            // Started by XkcdViewer icon
+            loadComicNumber(null);
+        }
     }
     
     @Override
