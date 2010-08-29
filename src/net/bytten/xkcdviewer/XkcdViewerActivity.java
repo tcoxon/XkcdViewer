@@ -175,6 +175,23 @@ public class XkcdViewerActivity extends Activity {
         setZoomControlEnable(value);
     }
     
+    public boolean isReopenLastComic() {
+        final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        return prefs.getBoolean("reopenLastComic",false);
+    }
+    
+    public String getLastReadComic() {
+        final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        return prefs.getString("lastComic", null);
+    }
+    
+    public void setLastReadComic(String n) {
+        final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        final SharedPreferences.Editor editor = prefs.edit();
+        editor.putString("lastComic", n);
+        editor.commit();
+    }
+    
     public void setZoomControlEnable(boolean b) {
         final ViewGroup zoomParent = (ViewGroup)webview.getParent().getParent();
         if (zoom.getParent() == zoomParent) zoomParent.removeView(zoom);
@@ -211,7 +228,11 @@ public class XkcdViewerActivity extends Activity {
             }
         } else {
             // Started by XkcdViewer icon
-            loadComicNumber(null);
+            if (isReopenLastComic()) {
+                loadComicNumber(getLastReadComic());
+            } else {
+                loadComicNumber(null);
+            }
         }
     }
     
@@ -562,6 +583,7 @@ public class XkcdViewerActivity extends Activity {
                 m = comicNumberPattern.matcher(line);
                 if (m.find()) {
                     comicInfo.number = m.group(1);
+                    setLastReadComic(comicInfo.number);
                 }
                 // Thread.sleep(0) gives interrupts a chance to get through.
                 Thread.sleep(0);
