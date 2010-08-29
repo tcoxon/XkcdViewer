@@ -38,7 +38,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.DialogInterface.OnCancelListener;
-import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
@@ -48,7 +47,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.text.InputType;
-import android.util.Config;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -69,7 +67,9 @@ import android.widget.TextView.OnEditorActionListener;
 
 public class XkcdViewerActivity extends Activity {
 
-    static class CouldntParseComicPage extends Exception {}
+    static class CouldntParseComicPage extends Exception {
+        private static final long serialVersionUID = 1L;
+    }
 
     static class ComicInfo {
         public URL imageURL;
