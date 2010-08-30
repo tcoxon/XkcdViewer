@@ -107,7 +107,8 @@ public class XkcdViewerActivity extends Activity {
         MENU_GO_TO_PREV = 8,
         MENU_GO_TO_FIRST = 9,
         MENU_DEBUG = 10,
-        MENU_HOVER_TEXT = 11;
+        MENU_HOVER_TEXT = 11,
+        MENU_ARCHIVE = 12;
 
     private WebView webview;
     private TextView title;
@@ -298,11 +299,16 @@ public class XkcdViewerActivity extends Activity {
             .setIcon(android.R.drawable.ic_media_rew);
         smGoTo.add(0, MENU_GO_TO_FIRST, 0, "First")
             .setIcon(android.R.drawable.ic_media_previous);
+        smGoTo.add(0, MENU_ARCHIVE, 0, "Archive")
+            .setIcon(R.drawable.ic_menu_archive);
         smGoTo.add(0, MENU_RANDOM, 0, "Random")
             .setIcon(R.drawable.ic_menu_dice);
         
         menu.add(0, MENU_HOVER_TEXT, 0, "Hover Text")
             .setIcon(android.R.drawable.ic_menu_info_details);
+        
+        menu.add(0, MENU_ARCHIVE, 0, "Comic List")
+            .setIcon(R.drawable.ic_menu_archive);
         
         final SubMenu smShare = menu.addSubMenu("Share...")
             .setIcon(android.R.drawable.ic_menu_share);
@@ -314,7 +320,7 @@ public class XkcdViewerActivity extends Activity {
         menu.add(0, MENU_REFRESH, 0, "Refresh")
             .setIcon(R.drawable.ic_menu_refresh);
 
-        menu.add(0, MENU_SETTINGS, 0, "Preferences...")
+        menu.add(0, MENU_SETTINGS, 0, "Preferences")
             .setIcon(android.R.drawable.ic_menu_manage);
         if (debuggable())
             menu.add(0, MENU_DEBUG, 0, "Debug");
@@ -356,6 +362,13 @@ public class XkcdViewerActivity extends Activity {
             return true;
         case MENU_DEBUG:
             toast("Build.MODEL: \""+Build.MODEL+"\"");
+            return true;
+        case MENU_ARCHIVE:
+            Intent archive = new Intent();
+            archive.setAction(Intent.ACTION_VIEW);
+            archive.addCategory(Intent.CATEGORY_BROWSABLE);
+            archive.setData(Uri.parse("http://www.xkcd.com/archive/"));
+            startActivity(archive);
             return true;
         }
         return false;
