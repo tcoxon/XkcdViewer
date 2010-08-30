@@ -87,7 +87,9 @@ public class XkcdViewerActivity extends Activity {
                    xkcdHomePattern = Pattern.compile(
                        "http://(www\\.)?xkcd\\.com(/)?"),
                    comicUrlPattern = Pattern.compile(
-                       "http://(www\\.)?xkcd\\.com/([0-9]+)(/)?");
+                       "http://(www\\.)?xkcd\\.com/([0-9]+)(/)?"),
+                   archiveUrlPattern = Pattern.compile(
+                       "http://(www\\.)?xkcd\\.com/archive(/)?");
     
     public static final FrameLayout.LayoutParams ZOOM_PARAMS =
         new FrameLayout.LayoutParams(
@@ -233,15 +235,21 @@ public class XkcdViewerActivity extends Activity {
             if (m.matches()) {
                 loadComicNumber(m.group(2));
             } else {
-                // it wasn't a link to comic
-                m = xkcdHomePattern.matcher(i.getDataString());
-                // last ditch attempt: was it a link to the home page?
+                m = archiveUrlPattern.matcher(i.getDataString());
                 if (m.matches()) {
-                    loadComicNumber(null);
-                } else {
-                    Toast.makeText(this, "XkcdViewer can't display this content.",
-                            Toast.LENGTH_SHORT).show();
+                    showArchive();
                     this.finish();
+                } else {
+                    // it wasn't a link to comic or to the archive
+                    m = xkcdHomePattern.matcher(i.getDataString());
+                    // last ditch attempt: was it a link to the home page?
+                    if (m.matches()) {
+                        loadComicNumber(null);
+                    } else {
+                        Toast.makeText(this, "XkcdViewer can't display this content.",
+                                Toast.LENGTH_SHORT).show();
+                        this.finish();
+                    }
                 }
             }
         } else {
@@ -252,6 +260,12 @@ public class XkcdViewerActivity extends Activity {
                 loadComicNumber(null);
             }
         }
+    }
+    
+    public void showArchive() {
+        Intent i = new Intent(this, ArchiveActivity.class);
+        i.setAction(Intent.ACTION_VIEW);
+        startActivity(i);
     }
     
     @Override
@@ -364,11 +378,7 @@ public class XkcdViewerActivity extends Activity {
             toast("Build.MODEL: \""+Build.MODEL+"\"");
             return true;
         case MENU_ARCHIVE:
-            Intent archive = new Intent();
-            archive.setAction(Intent.ACTION_VIEW);
-            archive.addCategory(Intent.CATEGORY_BROWSABLE);
-            archive.setData(Uri.parse("http://www.xkcd.com/archive/"));
-            startActivity(archive);
+            showArchive();
             return true;
         }
         return false;

@@ -25,6 +25,13 @@
                 <data android:scheme="http" android:host="www.xkcd.com" />
             </intent-filter>
         </activity>
+        <activity android:name=".ArchiveActivity"
+                  android:label="@string/app_archive_label"
+                  android:configChanges="keyboardHidden|orientation">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+            </intent-filter>
+        </activity>
 
     <activity
       android:name=".SettingsActivity"
