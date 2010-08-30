@@ -51,6 +51,7 @@ import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.SubMenu;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
@@ -61,6 +62,7 @@ import android.webkit.WebViewClient;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.TextView.OnEditorActionListener;
@@ -95,13 +97,17 @@ public class XkcdViewerActivity extends Activity {
 
     public static final String PACKAGE_NAME = "net.bytten.xkcdviewer";
     
-    public static final int MENU_HOVER_TEXT = 0,
-        MENU_REFRESH = 1,
+    public static final int MENU_REFRESH = 1,
         MENU_RANDOM = 2,
         MENU_SHARE_LINK = 3,
         MENU_SHARE_IMAGE = 4,
         MENU_SETTINGS = 5,
-        MENU_DEBUG = 10;
+        MENU_GO_TO_LAST = 6,
+        MENU_GO_TO_NEXT = 7,
+        MENU_GO_TO_PREV = 8,
+        MENU_GO_TO_FIRST = 9,
+        MENU_DEBUG = 10,
+        MENU_HOVER_TEXT = 11;
 
     private WebView webview;
     private TextView title;
@@ -167,7 +173,18 @@ public class XkcdViewerActivity extends Activity {
                 loadComicNumber(null);
             }
         });
+        
+        ((ImageView)findViewById(R.id.randomBtn)).setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                loadRandomComic();
+            }
+        });
     }
+    
+    public void goToFirst() { loadComicNumber("1"); }
+    public void goToPrev() { loadComicNumber(getComicNumber()-1); }
+    public void goToNext() { loadComicNumber(getComicNumber()+1); }
+    public void goToLast() { loadComicNumber(null); }
     
     public void resetZoomControlEnable() {
         final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
@@ -271,12 +288,34 @@ public class XkcdViewerActivity extends Activity {
     
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        menu.add(0, MENU_RANDOM, 0, "Random");
-        menu.add(0, MENU_HOVER_TEXT, 0, "Hover Text");
-        menu.add(0, MENU_REFRESH, 0, "Refresh");
-        menu.add(0, MENU_SHARE_LINK, 0, "Share Link...");
-        menu.add(0, MENU_SHARE_IMAGE, 0, "Share Image...");
-        menu.add(0, MENU_SETTINGS, 0, "Preferences...");
+        final SubMenu smGoTo = menu.addSubMenu("Go To...")
+            .setIcon(android.R.drawable.ic_menu_more);
+        smGoTo.add(0, MENU_GO_TO_LAST, 0, "Last")
+            .setIcon(android.R.drawable.ic_media_next);
+        smGoTo.add(0, MENU_GO_TO_NEXT, 0, "Next")
+            .setIcon(android.R.drawable.ic_media_ff);
+        smGoTo.add(0, MENU_GO_TO_PREV, 0, "Previous")
+            .setIcon(android.R.drawable.ic_media_rew);
+        smGoTo.add(0, MENU_GO_TO_FIRST, 0, "First")
+            .setIcon(android.R.drawable.ic_media_previous);
+        smGoTo.add(0, MENU_RANDOM, 0, "Random")
+            .setIcon(R.drawable.ic_menu_dice);
+        
+        menu.add(0, MENU_HOVER_TEXT, 0, "Hover Text")
+            .setIcon(android.R.drawable.ic_menu_info_details);
+        
+        final SubMenu smShare = menu.addSubMenu("Share...")
+            .setIcon(android.R.drawable.ic_menu_share);
+        smShare.add(0, MENU_SHARE_LINK, 0, "Link...")
+            .setIcon(android.R.drawable.ic_menu_share);
+        smShare.add(0, MENU_SHARE_IMAGE, 0, "Image...")
+            .setIcon(android.R.drawable.ic_menu_gallery);
+        
+        menu.add(0, MENU_REFRESH, 0, "Refresh")
+            .setIcon(R.drawable.ic_menu_refresh);
+
+        menu.add(0, MENU_SETTINGS, 0, "Preferences...")
+            .setIcon(android.R.drawable.ic_menu_manage);
         if (debuggable())
             menu.add(0, MENU_DEBUG, 0, "Debug");
         return true;
@@ -302,6 +341,18 @@ public class XkcdViewerActivity extends Activity {
             return true;
         case MENU_SETTINGS:
             showSettings();
+            return true;
+        case MENU_GO_TO_LAST:
+            goToLast();
+            return true;
+        case MENU_GO_TO_NEXT:
+            goToNext();
+            return true;
+        case MENU_GO_TO_PREV:
+            goToPrev();
+            return true;
+        case MENU_GO_TO_FIRST:
+            goToFirst();
             return true;
         case MENU_DEBUG:
             toast("Build.MODEL: \""+Build.MODEL+"\"");

@@ -10,8 +10,13 @@
 		android:layout_width="fill_parent"
 		android:layout_height="wrap_content">
 		<TableRow android:gravity="center">
+		<ImageView android:id="@+id/bookmarkBtn"
+		    android:src="@android:drawable/btn_star_big_off"
+		    android:layout_width="wrap_content"
+		    android:layout_height="wrap_content" />
 		<Button android:text="&lt;&lt;" android:id="@+id/firstBtn"
 			android:layout_weight="1"
+			android:visibility="gone"
 			android:layout_width="wrap_content" android:layout_height="wrap_content" />
 		<Button android:text="&lt;" android:id="@+id/prevBtn"
 			android:layout_weight="1"
@@ -27,7 +32,13 @@
 		<Button android:text="&gt;&gt;" android:id="@+id/lastBtn"
 			android:layout_weight="1"
 			android:layout_width="wrap_content" android:layout_height="wrap_content" />
-		</TableRow>
+		
+        <ImageView
+            android:id="@+id/randomBtn"
+            android:src="@drawable/ic_menu_dice"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+    </TableRow>
 	</TableLayout>
 
 	<TextView android:id="@+id/title"
