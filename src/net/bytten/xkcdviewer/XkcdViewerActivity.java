@@ -40,6 +40,7 @@ import android.content.SharedPreferences;
 import android.content.DialogInterface.OnCancelListener;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Build;
@@ -49,6 +50,7 @@ import android.preference.PreferenceManager;
 import android.text.InputType;
 import android.view.Gravity;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.SubMenu;
@@ -113,7 +115,8 @@ public class XkcdViewerActivity extends Activity {
         MENU_DEBUG = 10,
         MENU_HOVER_TEXT = 11,
         MENU_ARCHIVE = 12,
-        MENU_DONATE = 13;
+        MENU_DONATE = 13,
+        MENU_ABOUT = 14;
 
     private WebView webview;
     private TextView title;
@@ -340,6 +343,8 @@ public class XkcdViewerActivity extends Activity {
             .setIcon(android.R.drawable.ic_menu_manage);
         menu.add(0, MENU_DONATE, 0, "Donate")
             .setIcon(R.drawable.ic_menu_heart);
+        menu.add(0, MENU_ABOUT, 0, "About")
+            .setIcon(android.R.drawable.ic_menu_info_details);
         
         if (debuggable())
             menu.add(0, MENU_DEBUG, 0, "Debug");
@@ -388,8 +393,36 @@ public class XkcdViewerActivity extends Activity {
         case MENU_DONATE:
             donate();
             return true;
+        case MENU_ABOUT:
+            showAbout();
+            return true;
         }
         return false;
+    }
+    
+    public void showAbout() {
+        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(R.string.app_name);
+        builder.setIcon(android.R.drawable.ic_menu_info_details);
+        builder.setNegativeButton(android.R.string.ok, null);
+        builder.setNeutralButton("Donate", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                donate();
+            }
+        });
+        final View v = LayoutInflater.from(this).inflate(R.layout.about, null);
+        final TextView tv = (TextView)v.findViewById(R.id.aboutText);
+        tv.setText(getString(R.string.aboutText, getVersion()));
+        builder.setView(v);
+        builder.create().show();
+    }
+    
+    public String getVersion() {
+        try {
+            return getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
+        } catch (NameNotFoundException e) {
+            return "???";
+        }
     }
     
     public void donate() {
