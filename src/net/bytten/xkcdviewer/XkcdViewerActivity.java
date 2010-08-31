@@ -91,6 +91,8 @@ public class XkcdViewerActivity extends Activity {
                    archiveUrlPattern = Pattern.compile(
                        "http://(www\\.)?xkcd\\.com/archive(/)?");
     
+    public static final String DONATE_URL = "https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=C9JRVA3NTULSL&lc=US&item_name=XkcdViewer%20donation&item_number=xkcdviewer&currency_code=USD";
+    
     public static final FrameLayout.LayoutParams ZOOM_PARAMS =
         new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.FILL_PARENT,
@@ -110,7 +112,8 @@ public class XkcdViewerActivity extends Activity {
         MENU_GO_TO_FIRST = 9,
         MENU_DEBUG = 10,
         MENU_HOVER_TEXT = 11,
-        MENU_ARCHIVE = 12;
+        MENU_ARCHIVE = 12,
+        MENU_DONATE = 13;
 
     private WebView webview;
     private TextView title;
@@ -333,9 +336,11 @@ public class XkcdViewerActivity extends Activity {
         
         menu.add(0, MENU_REFRESH, 0, "Refresh")
             .setIcon(R.drawable.ic_menu_refresh);
-
         menu.add(0, MENU_SETTINGS, 0, "Preferences")
             .setIcon(android.R.drawable.ic_menu_manage);
+        menu.add(0, MENU_DONATE, 0, "Donate")
+            .setIcon(R.drawable.ic_menu_heart);
+        
         if (debuggable())
             menu.add(0, MENU_DEBUG, 0, "Debug");
         return true;
@@ -380,8 +385,19 @@ public class XkcdViewerActivity extends Activity {
         case MENU_ARCHIVE:
             showArchive();
             return true;
+        case MENU_DONATE:
+            donate();
+            return true;
         }
         return false;
+    }
+    
+    public void donate() {
+        Intent browser = new Intent();
+        browser.setAction(Intent.ACTION_VIEW);
+        browser.addCategory(Intent.CATEGORY_BROWSABLE);
+        browser.setData(Uri.parse(DONATE_URL));
+        startActivity(browser);
     }
 
     public void showSettings() {
