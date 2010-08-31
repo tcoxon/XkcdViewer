@@ -68,7 +68,7 @@ public class ArchiveActivity extends ListActivity {
                         Thread.sleep(0); // allow space for interruption
                         
                         Matcher m = archiveItemPattern.matcher(line);
-                        if (m.matches()) {
+                        while (m.find()) {
                             ArchiveItem item = new ArchiveItem();
                             item.comicNumber = m.group(1);
                             item.date = m.group(2);
