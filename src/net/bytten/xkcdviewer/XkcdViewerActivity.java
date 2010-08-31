@@ -78,6 +78,7 @@ public class XkcdViewerActivity extends Activity {
     static class ComicInfo {
         public URL imageURL;
         public String title = "", altText = "", number = "1";
+        public boolean bookmarked = false;
     }
 
     static Pattern comicPattern = Pattern.compile(
@@ -128,6 +129,8 @@ public class XkcdViewerActivity extends Activity {
     private Thread currentLoadThread = null;
 
     private Handler handler = new Handler();
+    
+    private ImageView bookmarkBtn = null;
 
     protected void resetContent() {
         requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -188,6 +191,34 @@ public class XkcdViewerActivity extends Activity {
                 loadRandomComic();
             }
         });
+        
+        bookmarkBtn = (ImageView)findViewById(R.id.bookmarkBtn);
+        bookmarkBtn.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                toggleBookmark();
+            }
+        });
+        refreshBookmarkBtn();
+    }
+    
+    public void refreshBookmarkBtn() {
+        if (comicInfo != null && comicInfo.bookmarked) {
+            bookmarkBtn.setBackgroundResource(android.R.drawable.btn_star_big_on);
+        } else {
+            bookmarkBtn.setBackgroundResource(android.R.drawable.btn_star_big_off);
+        }
+    }
+    
+    public void toggleBookmark() {
+        if (comicInfo != null) {
+            if (comicInfo.bookmarked) {
+                BookmarksHelper.removeBookmark(this, comicInfo.number);
+            } else {
+                BookmarksHelper.addBookmark(this, comicInfo.number, comicInfo.title);
+            }
+            comicInfo.bookmarked = !comicInfo.bookmarked;
+            refreshBookmarkBtn();
+        }
     }
     
     public void goToFirst() { loadComicNumber("1"); }
@@ -646,6 +677,7 @@ public class XkcdViewerActivity extends Activity {
                 comicInfo = _comicInfo;
                 title.setText(comicInfo.number + " - " + comicInfo.title);
                 comicIdSel.setText(comicInfo.number);
+                refreshBookmarkBtn();
 
                 webview.clearView();
                 final ProgressDialog pd = ProgressDialog.show(
@@ -707,6 +739,7 @@ public class XkcdViewerActivity extends Activity {
                 if (m.find()) {
                     comicInfo.number = m.group(1);
                     setLastReadComic(comicInfo.number);
+                    comicInfo.bookmarked = BookmarksHelper.isBookmarked(this, comicInfo.number);
                 }
                 // Thread.sleep(0) gives interrupts a chance to get through.
                 Thread.sleep(0);
