@@ -1,7 +1,6 @@
 package net.bytten.xkcdviewer;
 
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
@@ -23,6 +22,8 @@ import android.os.Handler;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -68,11 +69,12 @@ public class ArchiveActivity extends ListActivity {
                         Thread.sleep(0); // allow space for interruption
                         
                         Matcher m = archiveItemPattern.matcher(line);
-                        if (m.matches()) {
+                        while (m.find()) {
                             ArchiveItem item = new ArchiveItem();
                             item.comicNumber = m.group(1);
-                            item.date = m.group(2);
                             item.title = m.group(3);
+                            if (BookmarksHelper.isBookmarked(ArchiveActivity.this, item))
+                                item.bookmarked = true;
                             items.add(item);
                         }
                     }
@@ -127,17 +129,45 @@ public class ArchiveActivity extends ListActivity {
         }
     }
     
-    static class ArchiveItemView extends TextView implements View.OnClickListener {
+    static class ArchiveItemView extends LinearLayout implements View.OnClickListener {
         protected ArchiveItem item = null;
+        protected TextView tv = null;
+        protected ImageView star = null;
+        
         public ArchiveItemView(Context cxt, ArchiveItem item) {
             super(cxt);
+            tv = new TextView(cxt);
+            star = new ImageView(cxt);
+            setOrientation(LinearLayout.HORIZONTAL);
+            setOnClickListener(this);
+            star.setClickable(true);
+            addView(star);
+            addView(tv);
             setItem(item);
         }
         public ArchiveItem getItem() { return item; }
-        public void setItem(ArchiveItem item) {
-            this.item = item;
-            setText(item.comicNumber + " - " + item.title);
-            setOnClickListener(this);
+        public void setItem(ArchiveItem itm) {
+            item = itm;
+            tv.setText(item.comicNumber + " - " + item.title);
+            refreshStar();
+            star.setOnClickListener(new View.OnClickListener() {
+                public void onClick(View v) {
+                    if (item.bookmarked) {
+                        BookmarksHelper.removeBookmark(getContext(), item);
+                    } else {
+                        BookmarksHelper.addBookmark(getContext(), item);
+                    }
+                    item.bookmarked = !item.bookmarked;
+                    refreshStar();
+                }
+            });
+        }
+        public void refreshStar() {
+            if (item.bookmarked) {
+                star.setBackgroundResource(android.R.drawable.btn_star_big_on);
+            } else {
+                star.setBackgroundResource(android.R.drawable.btn_star_big_off);
+            }
         }
         public void onClick(View v) {
             Intent comic = new Intent();
@@ -150,6 +180,6 @@ public class ArchiveActivity extends ListActivity {
     
     static class ArchiveItem {
         public boolean bookmarked = false;
-        public String title, date, comicNumber;
+        public String title, comicNumber;
     }
 }

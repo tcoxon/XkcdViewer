@@ -40,6 +40,7 @@ import android.content.SharedPreferences;
 import android.content.DialogInterface.OnCancelListener;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Build;
@@ -49,6 +50,7 @@ import android.preference.PreferenceManager;
 import android.text.InputType;
 import android.view.Gravity;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.SubMenu;
@@ -76,6 +78,7 @@ public class XkcdViewerActivity extends Activity {
     static class ComicInfo {
         public URL imageURL;
         public String title = "", altText = "", number = "1";
+        public boolean bookmarked = false;
     }
 
     static Pattern comicPattern = Pattern.compile(
@@ -90,6 +93,8 @@ public class XkcdViewerActivity extends Activity {
                        "http://(www\\.)?xkcd\\.com/([0-9]+)(/)?"),
                    archiveUrlPattern = Pattern.compile(
                        "http://(www\\.)?xkcd\\.com/archive(/)?");
+    
+    public static final String DONATE_URL = "https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=C9JRVA3NTULSL&lc=US&item_name=XkcdViewer%20donation&item_number=xkcdviewer&currency_code=USD";
     
     public static final FrameLayout.LayoutParams ZOOM_PARAMS =
         new FrameLayout.LayoutParams(
@@ -110,7 +115,9 @@ public class XkcdViewerActivity extends Activity {
         MENU_GO_TO_FIRST = 9,
         MENU_DEBUG = 10,
         MENU_HOVER_TEXT = 11,
-        MENU_ARCHIVE = 12;
+        MENU_ARCHIVE = 12,
+        MENU_DONATE = 13,
+        MENU_ABOUT = 14;
 
     private WebView webview;
     private TextView title;
@@ -122,6 +129,8 @@ public class XkcdViewerActivity extends Activity {
     private Thread currentLoadThread = null;
 
     private Handler handler = new Handler();
+    
+    private ImageView bookmarkBtn = null;
 
     protected void resetContent() {
         requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -182,6 +191,34 @@ public class XkcdViewerActivity extends Activity {
                 loadRandomComic();
             }
         });
+        
+        bookmarkBtn = (ImageView)findViewById(R.id.bookmarkBtn);
+        bookmarkBtn.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                toggleBookmark();
+            }
+        });
+        refreshBookmarkBtn();
+    }
+    
+    public void refreshBookmarkBtn() {
+        if (comicInfo != null && comicInfo.bookmarked) {
+            bookmarkBtn.setBackgroundResource(android.R.drawable.btn_star_big_on);
+        } else {
+            bookmarkBtn.setBackgroundResource(android.R.drawable.btn_star_big_off);
+        }
+    }
+    
+    public void toggleBookmark() {
+        if (comicInfo != null) {
+            if (comicInfo.bookmarked) {
+                BookmarksHelper.removeBookmark(this, comicInfo.number);
+            } else {
+                BookmarksHelper.addBookmark(this, comicInfo.number, comicInfo.title);
+            }
+            comicInfo.bookmarked = !comicInfo.bookmarked;
+            refreshBookmarkBtn();
+        }
     }
     
     public void goToFirst() { loadComicNumber("1"); }
@@ -333,9 +370,13 @@ public class XkcdViewerActivity extends Activity {
         
         menu.add(0, MENU_REFRESH, 0, "Refresh")
             .setIcon(R.drawable.ic_menu_refresh);
-
         menu.add(0, MENU_SETTINGS, 0, "Preferences")
             .setIcon(android.R.drawable.ic_menu_manage);
+        menu.add(0, MENU_DONATE, 0, "Donate")
+            .setIcon(R.drawable.ic_menu_heart);
+        menu.add(0, MENU_ABOUT, 0, "About")
+            .setIcon(android.R.drawable.ic_menu_info_details);
+        
         if (debuggable())
             menu.add(0, MENU_DEBUG, 0, "Debug");
         return true;
@@ -380,8 +421,47 @@ public class XkcdViewerActivity extends Activity {
         case MENU_ARCHIVE:
             showArchive();
             return true;
+        case MENU_DONATE:
+            donate();
+            return true;
+        case MENU_ABOUT:
+            showAbout();
+            return true;
         }
         return false;
+    }
+    
+    public void showAbout() {
+        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(R.string.app_name);
+        builder.setIcon(android.R.drawable.ic_menu_info_details);
+        builder.setNegativeButton(android.R.string.ok, null);
+        builder.setNeutralButton("Donate", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                donate();
+            }
+        });
+        final View v = LayoutInflater.from(this).inflate(R.layout.about, null);
+        final TextView tv = (TextView)v.findViewById(R.id.aboutText);
+        tv.setText(getString(R.string.aboutText, getVersion()));
+        builder.setView(v);
+        builder.create().show();
+    }
+    
+    public String getVersion() {
+        try {
+            return getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
+        } catch (NameNotFoundException e) {
+            return "???";
+        }
+    }
+    
+    public void donate() {
+        Intent browser = new Intent();
+        browser.setAction(Intent.ACTION_VIEW);
+        browser.addCategory(Intent.CATEGORY_BROWSABLE);
+        browser.setData(Uri.parse(DONATE_URL));
+        startActivity(browser);
     }
 
     public void showSettings() {
@@ -597,6 +677,7 @@ public class XkcdViewerActivity extends Activity {
                 comicInfo = _comicInfo;
                 title.setText(comicInfo.number + " - " + comicInfo.title);
                 comicIdSel.setText(comicInfo.number);
+                refreshBookmarkBtn();
 
                 webview.clearView();
                 final ProgressDialog pd = ProgressDialog.show(
@@ -658,6 +739,7 @@ public class XkcdViewerActivity extends Activity {
                 if (m.find()) {
                     comicInfo.number = m.group(1);
                     setLastReadComic(comicInfo.number);
+                    comicInfo.bookmarked = BookmarksHelper.isBookmarked(this, comicInfo.number);
                 }
                 // Thread.sleep(0) gives interrupts a chance to get through.
                 Thread.sleep(0);
