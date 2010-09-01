@@ -29,7 +29,7 @@ import android.widget.TextView;
 
 public class ArchiveActivity extends ListActivity {
     
-    static protected enum LoadType { ARCHIVE, BOOKMARKS }
+    static protected enum LoadType { ARCHIVE, BOOKMARKS, SEARCH_TITLE };
     
     static Pattern archiveItemPattern = Pattern.compile(
             // group(1): comic number;   group(2): date;   group(3): title
@@ -66,14 +66,22 @@ public class ArchiveActivity extends ListActivity {
             public void run() {
                 try {
                     String query = "";
-                    if (intent.getData() != null)
+                    if (intent.getData() != null &&
+                        intent.getData().getQuery() != null)
+                    {
                         query = intent.getData().getQuery();
+                    }
                     
                     if (query.equals("bookmarks")) {
                         loadType = LoadType.BOOKMARKS;
-                        loadBookmarks(items, pd);
+                        loadBookmarks(items);
+                    } else if (query.length() >= 2 &&
+                        query.substring(0, 2).equals("q="))
+                    {
+                        loadType = LoadType.SEARCH_TITLE;
+                        loadSearchTitle(items, query.substring(2));
                     } else {
-                        loadArchive(items, pd);
+                        loadArchive(items);
                     }
                     
                     handler.post(new Runnable() {
@@ -81,6 +89,9 @@ public class ArchiveActivity extends ListActivity {
                             switch (loadType) {
                             case BOOKMARKS:
                                 setTitle(R.string.app_bookmarks_label);
+                                break;
+                            case SEARCH_TITLE:
+                                setTitle(R.string.app_search_title_label);
                                 break;
                             default:
                                 setTitle(R.string.app_archive_label);
@@ -91,12 +102,15 @@ public class ArchiveActivity extends ListActivity {
                     
                 } catch (MalformedURLException e) {
                     failed("Malformed URL: "+e);
+                    e.printStackTrace();
                 } catch (IOException e) {
                     failed("IO error: "+e);
+                    e.printStackTrace();
                 } catch (InterruptedException e) {
                     // Do nothing. Loading was cancelled.
                 } catch (Throwable e) {
                     failed(e.toString());
+                    e.printStackTrace();
                 } finally {
                     handler.post(new Runnable() {
                         public void run() {
@@ -109,11 +123,26 @@ public class ArchiveActivity extends ListActivity {
         loadThread[0].start();
     }
 
-    protected void loadBookmarks(List<ArchiveItem> items, ProgressDialog pd) throws Throwable {
+    protected void loadBookmarks(List<ArchiveItem> items) throws Throwable {
         items.addAll(BookmarksHelper.getBookmarks(this));
     }
     
-    protected void loadArchive(List<ArchiveItem> items, ProgressDialog pd) throws Throwable {
+    protected void loadSearchTitle(List<ArchiveItem> items, String titleQuery) throws Throwable {
+        String[] titleWords = titleQuery.toLowerCase().split("\\s");
+        loadArchive(items);
+        for (int i = 0; i < items.size(); i++) {
+            String title = items.get(i).title.toLowerCase();
+            for (String w: titleWords) {
+                if (title.indexOf(w) == -1) {
+                    items.remove(i);
+                    i--;
+                    break;
+                }
+            }
+        }
+    }
+    
+    protected void loadArchive(List<ArchiveItem> items) throws Throwable {
         URL url = new URL("http://www.xkcd.com/archive/");
         BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream()));
         

@@ -4,6 +4,7 @@
     <string name="app_name">XkcdViewer</string>
 <string name="app_archive_label">XKCD Archive - XkcdViewer</string>
 <string name="app_bookmarks_label">Favorites - XkcdViewer</string>
+<string name="app_search_title_label">Search by Title - XkcdViewer</string>
 <string name="aboutText">
     XkcdViewer v%s. Application for viewing XKCD comics with hover text.\n\n
     XkcdViewer Copyright (C) 2010, Tom Coxon.\n\n
