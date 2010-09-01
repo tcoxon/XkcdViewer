@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import android.app.AlertDialog;
 import android.app.ListActivity;
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -25,15 +26,18 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 public class ArchiveActivity extends ListActivity {
+    
+    static protected enum LoadType { ARCHIVE, BOOKMARKS }
     
     static Pattern archiveItemPattern = Pattern.compile(
             // group(1): comic number;   group(2): date;   group(3): title
             "\\s*<a href=\"/(\\d+)/\" title=\"(\\d+-\\d+-\\d+)\">([^<]+)</a><br/>\\s*");
     
     public Handler handler = new Handler();
+    
+    protected LoadType loadType = LoadType.ARCHIVE;
     
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -45,6 +49,7 @@ public class ArchiveActivity extends ListActivity {
     public void resetContent() {
         final Thread[] loadThread = {null};
         final List<ArchiveItem> items = new ArrayList<ArchiveItem>();
+        final Intent intent = getIntent();
 
         final ProgressDialog pd = ProgressDialog.show(this,
                 "XkcdViewer", "Loading archive...", true, true,
@@ -59,29 +64,27 @@ public class ArchiveActivity extends ListActivity {
 
         loadThread[0] = new Thread(new Runnable() {
             public void run() {
-                URL url = null;
                 try {
-                    url = new URL("http://www.xkcd.com/archive/");
-                    BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream()));
+                    String query = "";
+                    if (intent.getData() != null)
+                        query = intent.getData().getQuery();
                     
-                    String line;
-                    while ((line = br.readLine()) != null) {
-                        Thread.sleep(0); // allow space for interruption
-                        
-                        Matcher m = archiveItemPattern.matcher(line);
-                        while (m.find()) {
-                            ArchiveItem item = new ArchiveItem();
-                            item.comicNumber = m.group(1);
-                            item.title = m.group(3);
-                            if (BookmarksHelper.isBookmarked(ArchiveActivity.this, item))
-                                item.bookmarked = true;
-                            items.add(item);
-                        }
+                    if (query.equals("bookmarks")) {
+                        loadType = LoadType.BOOKMARKS;
+                        loadBookmarks(items, pd);
+                    } else {
+                        loadArchive(items, pd);
                     }
-                    br.close();
                     
                     handler.post(new Runnable() {
                         public void run() {
+                            switch (loadType) {
+                            case BOOKMARKS:
+                                setTitle(R.string.app_bookmarks_label);
+                                break;
+                            default:
+                                setTitle(R.string.app_archive_label);
+                            }
                             setListAdapter(new ArchiveAdapter(items));
                         }
                     });
@@ -100,15 +103,46 @@ public class ArchiveActivity extends ListActivity {
                             pd.dismiss();
                         }
                     });
-                }
+                }   
             }
         });
         loadThread[0].start();
     }
+
+    protected void loadBookmarks(List<ArchiveItem> items, ProgressDialog pd) throws Throwable {
+        items.addAll(BookmarksHelper.getBookmarks(this));
+    }
     
-    protected void failed(String msg) {
-        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
-        this.finish();
+    protected void loadArchive(List<ArchiveItem> items, ProgressDialog pd) throws Throwable {
+        URL url = new URL("http://www.xkcd.com/archive/");
+        BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream()));
+        
+        String line;
+        while ((line = br.readLine()) != null) {
+            Thread.sleep(0); // allow space for interruption
+            
+            Matcher m = archiveItemPattern.matcher(line);
+            while (m.find()) {
+                ArchiveItem item = new ArchiveItem();
+                item.comicNumber = m.group(1);
+                item.title = m.group(3);
+                if (BookmarksHelper.isBookmarked(ArchiveActivity.this, item))
+                    item.bookmarked = true;
+                items.add(item);
+            }
+        }
+        br.close();
+    }
+    
+    protected void failed(final String msg) {
+        handler.post(new Runnable() {
+            public void run() {
+                AlertDialog.Builder builder = new AlertDialog.Builder(ArchiveActivity.this);
+                builder.setMessage(msg);
+                AlertDialog alert = builder.create();
+                alert.show();
+            }
+        });
     }
     
     class ArchiveAdapter extends ArrayAdapter<ArchiveItem> {
