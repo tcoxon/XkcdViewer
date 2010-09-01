@@ -47,6 +47,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
+import android.text.Html;
 import android.text.InputType;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -797,63 +798,7 @@ public class XkcdViewerActivity extends Activity {
         }
     }
 
-    private static class HtmlEntity {
-        char chr;
-        String code;
-        public HtmlEntity(char chr_, String code_) {
-            chr = chr_; code = code_;
-        }
-    }
-
-    private final static HtmlEntity[] HTML_ENTITIES = {
-        new HtmlEntity(' ', "&nbsp;"),
-        new HtmlEntity('<', "&lt;"),
-        new HtmlEntity('>', "&gt;"),
-        new HtmlEntity('&', "&amp;"),
-        new HtmlEntity('¢', "&cent;"),
-        new HtmlEntity('£', "&pound;"),
-        new HtmlEntity('¥', "&yen;"),
-        new HtmlEntity('€', "&euro;"),
-        new HtmlEntity('§', "&sect;"),
-        new HtmlEntity('©', "&copy;"),
-        new HtmlEntity('®', "&reg;"),
-    };
-
     public String htmlEntityConvert(String text) {
-        StringBuilder result = new StringBuilder();
-        for (int i = 0; i < text.length(); i++) {
-            if (text.charAt(i) == '&') {
-                boolean found = false;
-                for (HtmlEntity he: HTML_ENTITIES) {
-                    if (i+he.code.length() <= text.length() &&
-                            text.substring(i,i+he.code.length()).equals(he.code)) {
-                        result.append(he.chr);
-                        found = true;
-                        i += he.code.length()-1;
-                        break;
-                    }
-                }
-                if (!found) {
-                    if (i+2 < text.length() && text.charAt(i+1) == '#') {
-                        int end = text.indexOf(';',i+2);
-                        if (end == -1) end = text.length();
-                        String num = text.substring(i+2,end);
-                        try {
-                            int n = Integer.parseInt(num);
-                            result.append((char)n);
-                            found = true;
-                            i = end;
-                        } catch (NumberFormatException ex) {
-                        }
-                    }
-                    if (!found) {
-                        result.append('&');
-                    }
-                }
-            } else {
-                result.append(text.charAt(i));
-            }
-        }
-        return result.toString();
+        return Html.fromHtml(text).toString();
     }
 }
