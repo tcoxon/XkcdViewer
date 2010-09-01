@@ -41,13 +41,15 @@ public class BookmarksHelper extends SQLiteOpenHelper {
         try {
             List<ArchiveItem> list = new ArrayList<ArchiveItem>();
             if (results.getCount() > 0) {
-                do {
+                results.moveToNext();
+                while (!results.isAfterLast()) {
                     ArchiveItem item = new ArchiveItem();
                     item.comicNumber = results.getString(0);
                     item.title = results.getString(1);
                     item.bookmarked = true;
                     list.add(item);
-                } while (results.moveToNext());
+                    results.moveToNext();
+                }
             }
             return list;
         } finally {

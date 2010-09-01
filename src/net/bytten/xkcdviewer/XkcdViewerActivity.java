@@ -117,7 +117,9 @@ public class XkcdViewerActivity extends Activity {
         MENU_HOVER_TEXT = 11,
         MENU_ARCHIVE = 12,
         MENU_DONATE = 13,
-        MENU_ABOUT = 14;
+        MENU_ABOUT = 14,
+        MENU_BOOKMARKS = 15,
+        MENU_SEARCH_TITLE = 16;
 
     private WebView webview;
     private TextView title;
@@ -301,6 +303,14 @@ public class XkcdViewerActivity extends Activity {
     
     public void showArchive() {
         Intent i = new Intent(this, ArchiveActivity.class);
+        i.setData(Uri.parse("http://xkcd.com/archive/"));
+        i.setAction(Intent.ACTION_VIEW);
+        startActivity(i);
+    }
+    
+    public void showBookmarks() {
+        Intent i = new Intent(this, ArchiveActivity.class);
+        i.setData(Uri.parse("http://xkcd.com/archive/?bookmarks"));
         i.setAction(Intent.ACTION_VIEW);
         startActivity(i);
     }
@@ -368,6 +378,10 @@ public class XkcdViewerActivity extends Activity {
         smShare.add(0, MENU_SHARE_IMAGE, 0, "Image...")
             .setIcon(android.R.drawable.ic_menu_gallery);
         
+        menu.add(0, MENU_BOOKMARKS, 0, "Favorites")
+            .setIcon(R.drawable.ic_menu_star);
+        menu.add(0, MENU_SEARCH_TITLE, 0, "Search by Title...")
+            .setIcon(android.R.drawable.ic_menu_search);
         menu.add(0, MENU_REFRESH, 0, "Refresh")
             .setIcon(R.drawable.ic_menu_refresh);
         menu.add(0, MENU_SETTINGS, 0, "Preferences")
@@ -427,8 +441,38 @@ public class XkcdViewerActivity extends Activity {
         case MENU_ABOUT:
             showAbout();
             return true;
+        case MENU_BOOKMARKS:
+            showBookmarks();
+            return true;
+        case MENU_SEARCH_TITLE:
+            searchByTitle();
+            return true;
         }
         return false;
+    }
+    
+    public void searchByTitle() {
+        AlertDialog.Builder alert = new AlertDialog.Builder(this);
+        final EditText input = new EditText(this);
+        alert.setTitle("Search by Title");
+        alert.setIcon(android.R.drawable.ic_menu_search);
+        alert.setView(input);
+        alert.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                String query = input.getText().toString();
+                Uri uri = Uri.parse("http://xkcd.com/archive/?q="+Uri.encode(query));
+                Intent i = new Intent(XkcdViewerActivity.this, ArchiveActivity.class);
+                i.setAction(Intent.ACTION_VIEW);
+                i.setData(uri);
+                startActivity(i);
+            }
+        });
+        alert.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+        alert.show();
     }
     
     public void showAbout() {

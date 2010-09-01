@@ -3,18 +3,21 @@
     <string name="hello">Hello World, XkcdViewerActivity!</string>
     <string name="app_name">XkcdViewer</string>
 <string name="app_archive_label">XKCD Archive - XkcdViewer</string>
+<string name="app_bookmarks_label">Favorites - XkcdViewer</string>
+<string name="app_search_title_label">Search by Title - XkcdViewer</string>
 <string name="aboutText">
     XkcdViewer v%s. Application for viewing XKCD comics with hover text.\n\n
-    Copyright (C) 2010, Tom Coxon.\n\n
+    XkcdViewer Copyright (C) 2010, Tom Coxon.\n\n
+    XKCD is Copyright (C) 2006 - 2010, Randall Munroe (http://xkcd.com)\n\n
+    Contains some menu icons from www.androidicons.com, licensed under a
+    Creative Commons Attribution - Share Alike license.\n\n
+    Application icon kindly donated by Johan Larsson.\n\n
     See the github page for this project for more information:\n
     \thttp://github.com/tcoxon/XkcdViewer/\n\n
     This program is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
     more details.\n\n
-    Contains some menu icons from www.androidicons.com, licensed under a
-    Creative Commons Attribution - Share Alike license.\n\n
-    Application icon kindly donated by Johan Larsson.\n\n
     If you like this app, please consider donating. Thanks.
 </string>
 </resources>
