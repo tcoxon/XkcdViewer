@@ -54,11 +54,13 @@ import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.SubMenu;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.View.OnClickListener;
+import android.view.View.OnTouchListener;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -161,6 +163,19 @@ public class XkcdViewerActivity extends Activity {
             public boolean onEditorAction(TextView v, int actionId,
                     KeyEvent event) {
                 loadComicNumber(comicIdSel.getText().toString());
+                return false;
+            }
+        }); 
+        comicIdSel.setOnClickListener(new OnClickListener() {
+            public void onClick(View v) {
+                comicIdSel.setText("");
+            }
+        });
+        comicIdSel.setOnTouchListener(new OnTouchListener() {
+            public boolean onTouch(View v, MotionEvent event) {
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    comicIdSel.setText("");
+                }
                 return false;
             }
         });
