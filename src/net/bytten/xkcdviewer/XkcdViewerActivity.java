@@ -240,7 +240,14 @@ public class XkcdViewerActivity extends Activity {
     }
     
     public void goToFirst() { loadComicNumber("1"); }
-    public void goToPrev() { loadComicNumber(getComicNumber()-1); }
+    public void goToPrev() {
+        if (getComicNumber() == 405) {
+            loadComicNumber(403);
+        }
+        else {
+            loadComicNumber(getComicNumber()-1);
+        }
+    }
     public void goToNext() { loadComicNumber(getComicNumber()+1); }
     public void goToLast() { loadComicNumber(null); }
     
@@ -770,6 +777,7 @@ public class XkcdViewerActivity extends Activity {
     }
 
     public URL getComicFromNumber(String number) throws MalformedURLException {
+        if (number.equals("404")) number = "405";
         return new URL("http", "xkcd.com", "/"+number+"/");
     }
 
