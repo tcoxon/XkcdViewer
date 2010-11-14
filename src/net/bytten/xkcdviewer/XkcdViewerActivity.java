@@ -182,25 +182,25 @@ public class XkcdViewerActivity extends Activity {
 
         ((Button)findViewById(R.id.firstBtn)).setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                loadComicNumber("1");
+                goToFirst();
             }
         });
 
         ((Button)findViewById(R.id.prevBtn)).setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                loadComicNumber(getComicNumber()-1);
+                goToPrev();
             }
         });
 
         ((Button)findViewById(R.id.nextBtn)).setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                loadComicNumber(getComicNumber()+1);
+                goToNext();
             }
         });
 
         ((Button)findViewById(R.id.lastBtn)).setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                loadComicNumber(null);
+                goToLast();
             }
         });
         
