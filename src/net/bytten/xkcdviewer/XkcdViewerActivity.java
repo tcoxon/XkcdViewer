@@ -728,7 +728,7 @@ public class XkcdViewerActivity extends Activity {
     }
 
     public void loadComic(URL url) throws IOException, CouldntParseComicPage, InterruptedException {
-        final ComicInfo _comicInfo = getComicImageURLFromPage(url);
+        final ComicInfo _comicInfo = getComicInfoFromPage(url);
         // Thread.sleep(0) gives interrupts a chance to get through.
         Thread.sleep(0);
         handler.post(new Runnable() {
@@ -765,6 +765,7 @@ public class XkcdViewerActivity extends Activity {
                     }
                 });
                 webview.loadUrl(comicInfo.imageURL.toString());
+                webview.requestFocus();
             }
         });
     }
@@ -784,7 +785,7 @@ public class XkcdViewerActivity extends Activity {
         return new URL(http.getHeaderField("Location"));
     }
 
-    public ComicInfo getComicImageURLFromPage(URL url) throws InterruptedException, IOException, CouldntParseComicPage {
+    public ComicInfo getComicInfoFromPage(URL url) throws InterruptedException, IOException, CouldntParseComicPage {
         ComicInfo comicInfo = new ComicInfo();
         BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream()));
         try {
