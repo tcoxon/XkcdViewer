@@ -84,8 +84,8 @@ public class XkcdViewerActivity extends Activity {
     }
 
     static Pattern comicPattern = Pattern.compile(
-                       "<img src=\"(http://[^\"]*imgs\\.xkcd\\.com/comics/[^\"]*)\" "+
-                       "title=\"([^\"]*)\" alt=\"([^\"]*)\" />"),
+                       "<img\\ssrc=\"(http://[^\"]*imgs\\.xkcd\\.com/comics/[^\"]*)\"\\s"+
+                       "title=\"([^\"]*)\" alt=\"([^\"]*)\"(\\s?)/>"),
                    comicNumberPattern = Pattern.compile(
                        "<h3>Permanent link to this comic: "+
                        "http://xkcd\\.com/([0-9]+)/</h3>"),
