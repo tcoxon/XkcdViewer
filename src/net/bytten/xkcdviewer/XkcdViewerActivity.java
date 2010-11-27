@@ -1,6 +1,6 @@
 /*
  *  XkcdViewer - Android app to view XKCD comics with hover text
- *  Copyright (C) 2009 Tom Coxon
+ *  Copyright (C) 2009-2010 Tom Coxon, Tyler Breisacher
  *  XKCD belongs to Randall Munroe.
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -59,6 +59,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.View.OnClickListener;
+import android.view.View.OnFocusChangeListener;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -83,8 +84,8 @@ public class XkcdViewerActivity extends Activity {
     }
 
     static Pattern comicPattern = Pattern.compile(
-                       "<img src=\"(http://[^\"]*imgs\\.xkcd\\.com/comics/[^\"]*)\" "+
-                       "title=\"([^\"]*)\" alt=\"([^\"]*)\" />"),
+                       "<img\\ssrc=\"(http://[^\"]*imgs\\.xkcd\\.com/comics/[^\"]*)\"\\s"+
+                       "title=\"([^\"]*)\" alt=\"([^\"]*)\""),
                    comicNumberPattern = Pattern.compile(
                        "<h3>Permanent link to this comic: "+
                        "http://xkcd\\.com/([0-9]+)/</h3>"),
@@ -163,29 +164,36 @@ public class XkcdViewerActivity extends Activity {
                 loadComicNumber(comicIdSel.getText().toString());
                 return false;
             }
+        }); 
+        comicIdSel.setOnFocusChangeListener(new OnFocusChangeListener() {
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (hasFocus) {
+                    comicIdSel.setText("");
+                }
+            }
         });
 
         ((Button)findViewById(R.id.firstBtn)).setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                loadComicNumber("1");
+                goToFirst();
             }
         });
 
         ((Button)findViewById(R.id.prevBtn)).setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                loadComicNumber(getComicNumber()-1);
+                goToPrev();
             }
         });
 
         ((Button)findViewById(R.id.nextBtn)).setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                loadComicNumber(getComicNumber()+1);
+                goToNext();
             }
         });
 
         ((Button)findViewById(R.id.lastBtn)).setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                loadComicNumber(null);
+                goToLast();
             }
         });
         
@@ -225,7 +233,14 @@ public class XkcdViewerActivity extends Activity {
     }
     
     public void goToFirst() { loadComicNumber("1"); }
-    public void goToPrev() { loadComicNumber(getComicNumber()-1); }
+    public void goToPrev() {
+        if (getComicNumber() == 405) {
+            loadComicNumber(403);
+        }
+        else {
+            loadComicNumber(getComicNumber()-1);
+        }
+    }
     public void goToNext() { loadComicNumber(getComicNumber()+1); }
     public void goToLast() { loadComicNumber(null); }
     
@@ -713,7 +728,7 @@ public class XkcdViewerActivity extends Activity {
     }
 
     public void loadComic(URL url) throws IOException, CouldntParseComicPage, InterruptedException {
-        final ComicInfo _comicInfo = getComicImageURLFromPage(url);
+        final ComicInfo _comicInfo = getComicInfoFromPage(url);
         // Thread.sleep(0) gives interrupts a chance to get through.
         Thread.sleep(0);
         handler.post(new Runnable() {
@@ -750,11 +765,13 @@ public class XkcdViewerActivity extends Activity {
                     }
                 });
                 webview.loadUrl(comicInfo.imageURL.toString());
+                webview.requestFocus();
             }
         });
     }
 
     public URL getComicFromNumber(String number) throws MalformedURLException {
+        if (number.equals("404")) number = "405";
         return new URL("http", "xkcd.com", "/"+number+"/");
     }
 
@@ -768,7 +785,7 @@ public class XkcdViewerActivity extends Activity {
         return new URL(http.getHeaderField("Location"));
     }
 
-    public ComicInfo getComicImageURLFromPage(URL url) throws InterruptedException, IOException, CouldntParseComicPage {
+    public ComicInfo getComicInfoFromPage(URL url) throws InterruptedException, IOException, CouldntParseComicPage {
         ComicInfo comicInfo = new ComicInfo();
         BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream()));
         try {
