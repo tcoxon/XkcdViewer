@@ -66,6 +66,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.TextView.OnEditorActionListener;
@@ -126,6 +127,7 @@ public class XkcdViewerActivity extends Activity {
     private TextView title;
     private ComicInfo comicInfo = new ComicInfo();
     private EditText comicIdSel;
+    private TableRow controls;
     
     private View zoom = null;
     
@@ -142,6 +144,7 @@ public class XkcdViewerActivity extends Activity {
         webview = (WebView)findViewById(R.id.viewer);
         title = (TextView)findViewById(R.id.title);
         comicIdSel = (EditText)findViewById(R.id.comicIdSel);
+        controls = (TableRow)findViewById(R.id.controls);
 
         webview.requestFocus();
         zoom = webview.getZoomControls();
@@ -150,6 +153,7 @@ public class XkcdViewerActivity extends Activity {
         webview.setOnClickListener(new OnClickListener() {
             public void onClick(View v) {
                 showHoverText();
+                XkcdViewerActivity.this.openOptionsMenu();
             }
         });
 
@@ -399,6 +403,10 @@ public class XkcdViewerActivity extends Activity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+    	controls.setVisibility(View.GONE);
+    	try{
+    		alert.cancel();
+    	}catch(Exception e){}
         switch (item.getItemId()) {
         case MENU_HOVER_TEXT:
             showHoverText();
@@ -622,16 +630,29 @@ public class XkcdViewerActivity extends Activity {
     public String getCurrentComicUrl() {
         return "http://xkcd.com/"+comicInfo.number+"/";
     }
-
+    
+    @Override
+    public boolean onMenuOpened(int f, Menu m){
+    	controls.setVisibility(View.VISIBLE);
+    	return true;
+    }
+    
+    
+    private AlertDialog alert;
     public void showHoverText() {
+    	controls.setVisibility(View.VISIBLE);
+    	
         AlertDialog.Builder builder = new AlertDialog.Builder(XkcdViewerActivity.this);
         builder.setMessage(comicInfo.altText);
+        /*
         builder.setNeutralButton("Close", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
                 dialog.dismiss();
             }
         });
-        AlertDialog alert = builder.create();
+        */
+        alert = builder.create();
+        alert.setCanceledOnTouchOutside(true);
         alert.show();
     }
 
@@ -740,6 +761,7 @@ public class XkcdViewerActivity extends Activity {
                         super.onPageFinished(view, url);
 
                         pd.dismiss();
+                        controls.setVisibility(View.GONE);
                     }
                 });
                 webview.setWebChromeClient(new WebChromeClient() {

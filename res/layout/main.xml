@@ -9,7 +9,7 @@
 	<TableLayout android:orientation="horizontal"
 		android:layout_width="fill_parent"
 		android:layout_height="wrap_content">
-		<TableRow android:gravity="center">
+		<TableRow android:gravity="center" android:id="@+id/controls">
 		<ImageView android:id="@+id/bookmarkBtn"
 		    android:layout_width="wrap_content"
 		    android:layout_height="wrap_content" />
@@ -24,7 +24,7 @@
 			android:layout_weight="1"
 			android:singleLine="true"
 			android:imeOptions="actionGo"
-			android:layout_width="wrap_content" android:layout_height="wrap_content" />
+			android:layout_width="wrap_content" android:layout_height="wrap_content" android:digits="1234567890" android:inputType="number"/>
 		<Button android:text="&gt;" android:id="@+id/nextBtn"
 			android:layout_weight="1"
 			android:layout_width="wrap_content" android:layout_height="wrap_content" />
@@ -41,9 +41,10 @@
 	</TableLayout>
 
 	<TextView android:id="@+id/title"
-		android:layout_width="fill_parent" android:layout_height="wrap_content" />
+		android:layout_width="fill_parent" android:layout_height="wrap_content"/>
 	
-	<net.bytten.xkcdviewer.ClickableWebView android:id="@+id/viewer"
-			android:layout_width="fill_parent" android:layout_height="fill_parent" />
 	
+	
+<RelativeLayout android:id="@+id/RelativeLayout01" android:layout_width="wrap_content" android:layout_height="wrap_content"><net.bytten.xkcdviewer.ClickableWebView android:id="@+id/viewer" android:layout_width="fill_parent" android:layout_height="fill_parent" /><TextView android:text="@+id/TextView01" android:layout_below="@id/viewer" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_alignParentTop="true" android:layout_alignParentBottom="true" android:layout_alignParentRight="true" android:layout_alignParentLeft="true" android:paddingTop="20px" android:paddingLeft="20px" android:visibility="gone" android:id="@+id/alttext"></TextView>
+</RelativeLayout>
 </TableLayout>
