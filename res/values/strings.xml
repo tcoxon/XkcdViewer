@@ -7,7 +7,7 @@
 <string name="app_search_title_label">Search by Title - XkcdViewer</string>
 <string name="aboutText">
     XkcdViewer v%s. Application for viewing XKCD comics with hover text.\n\n
-    XkcdViewer Copyright (C) 2010, Tom Coxon.\n\n
+    XkcdViewer Copyright (C) 2009-2010, Tom Coxon, Tyler Breisacher.\n\n
     XKCD is Copyright (C) 2006 - 2010, Randall Munroe (http://xkcd.com)\n\n
     Contains some menu icons from www.androidicons.com, licensed under a
     Creative Commons Attribution - Share Alike license.\n\n
