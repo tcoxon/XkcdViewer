@@ -31,6 +31,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.regex.*;
 
+import net.bytten.xkcdviewer.R;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
@@ -130,6 +131,8 @@ public class XkcdViewerActivity extends Activity {
     
     private View zoom = null;
     
+    private TextView altTV;
+    
     private Thread currentLoadThread = null;
 
     private Handler handler = new Handler();
@@ -143,6 +146,7 @@ public class XkcdViewerActivity extends Activity {
         webview = (WebView)findViewById(R.id.viewer);
         title = (TextView)findViewById(R.id.title);
         comicIdSel = (EditText)findViewById(R.id.comicIdSel);
+        altTV = (TextView)findViewById(R.id.alttext);
 
         webview.requestFocus();
         zoom = webview.getZoomControls();
@@ -638,7 +642,18 @@ public class XkcdViewerActivity extends Activity {
         return "http://xkcd.com/"+comicInfo.number+"/";
     }
 
+    private boolean altTextVisible = false;
+    
     public void showHoverText() {
+    	if(!altTextVisible){
+    		altTV.setVisibility(TextView.VISIBLE);
+    		altTV.setText(comicInfo.altText);
+    		altTextVisible = true;
+    	}else{
+    		altTV.setVisibility(TextView.GONE);
+    		altTextVisible = false;
+    	}
+    	/*
         AlertDialog.Builder builder = new AlertDialog.Builder(XkcdViewerActivity.this);
         builder.setMessage(comicInfo.altText);
         builder.setNeutralButton("Close", new DialogInterface.OnClickListener() {
@@ -648,6 +663,7 @@ public class XkcdViewerActivity extends Activity {
         });
         AlertDialog alert = builder.create();
         alert.show();
+        */
     }
 
     public void failed(final String reason) {
