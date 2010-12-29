@@ -506,7 +506,7 @@ public class XkcdViewerActivity extends Activity {
             }
         });
         final View v = LayoutInflater.from(this).inflate(R.layout.about, null);
-        final TextView tv = (TextView)v.findViewById(R.id.aboutText);
+        //final TextView tv = (TextView)v.findViewById(R.id.aboutText);
         tv.setText(getString(R.string.aboutText, getVersion()));
         builder.setView(v);
         builder.create().show();
