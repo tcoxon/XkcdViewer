@@ -25,9 +25,9 @@ public final class R {
         public static final int rbb=0x7f02000b;
     }
     public static final class id {
+        public static final int AbsoluteLayout01=0x7f060000;
         public static final int RelativeLayout01=0x7f06000b;
         public static final int TextView01=0x7f060009;
-        public static final int aboutText=0x7f060000;
         public static final int alttext=0x7f06000d;
         public static final int bookmarkBtn=0x7f060002;
         public static final int comicIdSel=0x7f060005;
