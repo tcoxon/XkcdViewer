@@ -135,9 +135,33 @@ public class XkcdViewerActivity extends Activity {
     private Handler handler = new Handler();
     
     private ImageView bookmarkBtn = null;
-
+    //
+    // Because Android 1.5 does not have android.os.Build.SDK_INT, we have to simulate
+    // for 1.5 devices, but string parsing is annoying, so we will use SDK_INT if it is
+    // available.
+    // CREDIT: These two methods are from
+    // http://sagistech.blogspot.com/2011/01/buildversionsdkint-on-android-15.html
+    //
+    public static int getSdkInt() {  
+        if (Build.VERSION.RELEASE.startsWith("1.5"))  
+            return 3;  
+         
+        return HelperInternal.getSdkIntInternal();  
+    }  
+      
+    private static class HelperInternal {  
+        private static int getSdkIntInternal() {  
+            return Build.VERSION.SDK_INT;                 
+        }  
+    } 
+    //
+    // !CREDIT:
+    //
+    
     protected void resetContent() {
-        requestWindowFeature(Window.FEATURE_NO_TITLE);
+        //Only hide the title bar if we're running an android less than Android 3.0
+    	if(getSdkInt() < 11)
+        	requestWindowFeature(Window.FEATURE_NO_TITLE);
 
         setContentView(R.layout.main);
         webview = (WebView)findViewById(R.id.viewer);
