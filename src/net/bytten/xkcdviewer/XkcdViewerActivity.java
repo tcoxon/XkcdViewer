@@ -1,6 +1,6 @@
 /*
  *  XkcdViewer - Android app to view XKCD comics with hover text
- *  Copyright (C) 2009-2010 Tom Coxon, Tyler Breisacher
+ *  Copyright (C) 2009-2010 Tom Coxon, Tyler Breisacher, David McCullough
  *  XKCD belongs to Randall Munroe.
  *
  *  This program is free software; you can redistribute it and/or modify
