@@ -1,7 +1,7 @@
 /*
- *  XkcdViewer - Android app to view XKCD comics with hover text
+ *  xkcdViewer - Android app to view xkcd comics with hover text
  *  Copyright (C) 2009-2010 Tom Coxon, Tyler Breisacher, David McCullough
- *  XKCD belongs to Randall Munroe.
+ *  xkcd belongs to Randall Munroe.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -327,14 +327,14 @@ public class XkcdViewerActivity extends Activity {
                     if (m.matches()) {
                         loadComicNumber(null);
                     } else {
-                        Toast.makeText(this, "XkcdViewer can't display this content.",
+                        Toast.makeText(this, "xkcdViewer can't display this content.",
                                 Toast.LENGTH_SHORT).show();
                         this.finish();
                     }
                 }
             }
         } else {
-            // Started by XkcdViewer icon
+            // Started by xkcdViewer icon
             if (isReopenLastComic()) {
                 loadComicNumber(getLastReadComic());
             } else {
@@ -574,7 +574,7 @@ public class XkcdViewerActivity extends Activity {
             final Thread[] saveThread = new Thread[1];
 
             final ProgressDialog pd = ProgressDialog.show(this,
-                    "XkcdViewer", "Saving Image...", true, true,
+                    "xkcdViewer", "Saving Image...", true, true,
                     new OnCancelListener() {
                 public void onCancel(DialogInterface dialog) {
                     if (saveThread[0] != null) {
@@ -706,7 +706,7 @@ public class XkcdViewerActivity extends Activity {
     public void loadComicNumber(final String number) {
 
         final ProgressDialog pd = ProgressDialog.show(this,
-                "XkcdViewer", "Loading comic...", true, true,
+                "xkcdViewer", "Loading comic...", true, true,
                 new OnCancelListener() {
             public void onCancel(DialogInterface dialog) {
                 if (currentLoadThread != null) {
@@ -768,7 +768,7 @@ public class XkcdViewerActivity extends Activity {
                 webview.clearView();
                 final ProgressDialog pd = ProgressDialog.show(
                         XkcdViewerActivity.this,
-                        "XkcdViewer", "Loading comic image...", false, true,
+                        "xkcdViewer", "Loading comic image...", false, true,
                         new OnCancelListener() {
                             public void onCancel(DialogInterface dialog) {
                                 webview.stopLoading();
