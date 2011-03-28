@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
       package="net.bytten.xkcdviewer"
-      android:versionCode="15"
-      android:versionName="2.1.2">
+      android:versionCode="16"
+      android:versionName="2.2">
       
     <uses-permission android:name="android.permission.INTERNET" />
     <supports-screens android:largeScreens="true" android:normalScreens="true" android:smallScreens="true" android:anyDensity="true" android:resizeable="true"></supports-screens>
