@@ -1,7 +1,7 @@
 /*
- *  XkcdViewer - Android app to view XKCD comics with hover text
- *  Copyright (C) 2009-2010 Tom Coxon, Tyler Breisacher
- *  XKCD belongs to Randall Munroe.
+ *  xkcdViewer - Android app to view xkcd comics with hover text
+ *  Copyright (C) 2009-2010 Tom Coxon, Tyler Breisacher, David McCullough
+ *  xkcd belongs to Randall Munroe.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -29,15 +29,16 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.regex.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
+import android.content.DialogInterface.OnCancelListener;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.DialogInterface.OnCancelListener;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
@@ -56,10 +57,10 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.SubMenu;
 import android.view.View;
-import android.view.ViewGroup;
-import android.view.Window;
 import android.view.View.OnClickListener;
 import android.view.View.OnFocusChangeListener;
+import android.view.ViewGroup;
+import android.view.Window;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -68,8 +69,8 @@ import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 import android.widget.TextView.OnEditorActionListener;
+import android.widget.Toast;
 
 public class XkcdViewerActivity extends Activity {
 
@@ -136,8 +137,33 @@ public class XkcdViewerActivity extends Activity {
     
     private ImageView bookmarkBtn = null;
 
+    //
+    // Because Android 1.5 does not have android.os.Build.SDK_INT, we have to simulate
+    // for 1.5 devices, but string parsing is annoying, so we will use SDK_INT if it is
+    // available.
+    // CREDIT: These two methods are from
+    // http://sagistech.blogspot.com/2011/01/buildversionsdkint-on-android-15.html
+    //
+    public static int getSdkInt() {  
+        if (Build.VERSION.RELEASE.startsWith("1.5"))  
+            return 3;  
+         
+        return HelperInternal.getSdkIntInternal();  
+    }  
+      
+    private static class HelperInternal {  
+        private static int getSdkIntInternal() {  
+            return Build.VERSION.SDK_INT;                 
+        }  
+    } 
+    //
+    // !CREDIT:
+    //
+    
     protected void resetContent() {
-        requestWindowFeature(Window.FEATURE_NO_TITLE);
+        //Only hide the title bar if we're running an android less than Android 3.0
+    	if(getSdkInt() < 11)
+        	requestWindowFeature(Window.FEATURE_NO_TITLE);
 
         setContentView(R.layout.main);
         webview = (WebView)findViewById(R.id.viewer);
@@ -301,14 +327,14 @@ public class XkcdViewerActivity extends Activity {
                     if (m.matches()) {
                         loadComicNumber(null);
                     } else {
-                        Toast.makeText(this, "XkcdViewer can't display this content.",
+                        Toast.makeText(this, "xkcdViewer can't display this content.",
                                 Toast.LENGTH_SHORT).show();
                         this.finish();
                     }
                 }
             }
         } else {
-            // Started by XkcdViewer icon
+            // Started by xkcdViewer icon
             if (isReopenLastComic()) {
                 loadComicNumber(getLastReadComic());
             } else {
@@ -548,7 +574,7 @@ public class XkcdViewerActivity extends Activity {
             final Thread[] saveThread = new Thread[1];
 
             final ProgressDialog pd = ProgressDialog.show(this,
-                    "XkcdViewer", "Saving Image...", true, true,
+                    "xkcdViewer", "Saving Image...", true, true,
                     new OnCancelListener() {
                 public void onCancel(DialogInterface dialog) {
                     if (saveThread[0] != null) {
@@ -680,7 +706,7 @@ public class XkcdViewerActivity extends Activity {
     public void loadComicNumber(final String number) {
 
         final ProgressDialog pd = ProgressDialog.show(this,
-                "XkcdViewer", "Loading comic...", true, true,
+                "xkcdViewer", "Loading comic...", true, true,
                 new OnCancelListener() {
             public void onCancel(DialogInterface dialog) {
                 if (currentLoadThread != null) {
@@ -742,7 +768,7 @@ public class XkcdViewerActivity extends Activity {
                 webview.clearView();
                 final ProgressDialog pd = ProgressDialog.show(
                         XkcdViewerActivity.this,
-                        "XkcdViewer", "Loading comic image...", false, true,
+                        "xkcdViewer", "Loading comic image...", false, true,
                         new OnCancelListener() {
                             public void onCancel(DialogInterface dialog) {
                                 webview.stopLoading();

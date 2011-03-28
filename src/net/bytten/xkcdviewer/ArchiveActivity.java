@@ -52,7 +52,7 @@ public class ArchiveActivity extends ListActivity {
         final Intent intent = getIntent();
 
         final ProgressDialog pd = ProgressDialog.show(this,
-                "XkcdViewer", "Loading archive...", true, true,
+                "xkcdViewer", "Loading archive...", true, true,
                 new OnCancelListener() {
             public void onCancel(DialogInterface dialog) {
                 if (loadThread[0] != null) {
