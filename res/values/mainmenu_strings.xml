@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources><string name="mainmenu_goto">Go To...</string>
+<string name="mainmenu_goto_last">Last</string>
+<string name="mainmenu_goto_next">Next</string>
+<string name="mainmenu_goto_first">First</string>
+<string name="mainmenu_goto_prev">Previous</string>
+<string name="mainmenu_archive">Archive</string>
+<string name="mainmenu_goto_random">Random</string>
+<string name="mainmenu_hover_text">Hover Text</string>
+<string name="mainmenu_comic_list">Archive</string>
+<string name="mainmenu_share">Share...</string>
+<string name="mainmenu_share_link">Link...</string>
+<string name="mainmenu_share_image">Image...</string>
+<string name="mainmenu_bookmarks">Favorites</string>
+<string name="mainmenu_search_title">Search by Title...</string>
+<string name="mainmenu_refresh">Refresh</string>
+<string name="mainmenu_settings">Preferences</string>
+<string name="mainmenu_donate">Donate</string>
+<string name="mainmenu_about">About</string>
+<string name="mainmenu_debug">Debug</string>
+</resources>

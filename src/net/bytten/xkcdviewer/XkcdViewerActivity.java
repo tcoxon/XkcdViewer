@@ -54,8 +54,8 @@ import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.SubMenu;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnFocusChangeListener;
@@ -107,7 +107,7 @@ public class XkcdViewerActivity extends Activity {
 
     public static final String PACKAGE_NAME = "net.bytten.xkcdviewer";
     
-    public static final int MENU_REFRESH = 1,
+    /*public static final int MENU_REFRESH = 1,
         MENU_RANDOM = 2,
         MENU_SHARE_LINK = 3,
         MENU_SHARE_IMAGE = 4,
@@ -122,8 +122,9 @@ public class XkcdViewerActivity extends Activity {
         MENU_DONATE = 13,
         MENU_ABOUT = 14,
         MENU_BOOKMARKS = 15,
-        MENU_SEARCH_TITLE = 16;
+        MENU_SEARCH_TITLE = 16;*/
 
+    
     private WebView webview;
     private TextView title;
     private ComicInfo comicInfo = new ComicInfo();
@@ -160,9 +161,14 @@ public class XkcdViewerActivity extends Activity {
     // !CREDIT:
     //
     
+    public boolean HONEYCOMB = false;
+    
     protected void resetContent() {
+    	//
+    	HONEYCOMB = getSdkInt() > 10?true:false;
+    	
         //Only hide the title bar if we're running an android less than Android 3.0
-    	if(getSdkInt() < 11)
+    	if(!HONEYCOMB)
         	requestWindowFeature(Window.FEATURE_NO_TITLE);
 
         setContentView(R.layout.main);
@@ -392,105 +398,70 @@ public class XkcdViewerActivity extends Activity {
     
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        final SubMenu smGoTo = menu.addSubMenu("Go To...")
-            .setIcon(android.R.drawable.ic_menu_more);
-        smGoTo.add(0, MENU_GO_TO_LAST, 0, "Last")
-            .setIcon(android.R.drawable.ic_media_next);
-        smGoTo.add(0, MENU_GO_TO_NEXT, 0, "Next")
-            .setIcon(android.R.drawable.ic_media_ff);
-        smGoTo.add(0, MENU_GO_TO_PREV, 0, "Previous")
-            .setIcon(android.R.drawable.ic_media_rew);
-        smGoTo.add(0, MENU_GO_TO_FIRST, 0, "First")
-            .setIcon(android.R.drawable.ic_media_previous);
-        smGoTo.add(0, MENU_ARCHIVE, 0, "Archive")
-            .setIcon(R.drawable.ic_menu_archive);
-        smGoTo.add(0, MENU_RANDOM, 0, "Random")
-            .setIcon(R.drawable.ic_menu_dice);
-        
-        menu.add(0, MENU_HOVER_TEXT, 0, "Hover Text")
-            .setIcon(android.R.drawable.ic_menu_info_details);
-        
-        menu.add(0, MENU_ARCHIVE, 0, "Comic List")
-            .setIcon(R.drawable.ic_menu_archive);
-        
-        final SubMenu smShare = menu.addSubMenu("Share...")
-            .setIcon(android.R.drawable.ic_menu_share);
-        smShare.add(0, MENU_SHARE_LINK, 0, "Link...")
-            .setIcon(android.R.drawable.ic_menu_share);
-        smShare.add(0, MENU_SHARE_IMAGE, 0, "Image...")
-            .setIcon(android.R.drawable.ic_menu_gallery);
-        
-        menu.add(0, MENU_BOOKMARKS, 0, "Favorites")
-            .setIcon(R.drawable.ic_menu_star);
-        menu.add(0, MENU_SEARCH_TITLE, 0, "Search by Title...")
-            .setIcon(android.R.drawable.ic_menu_search);
-        menu.add(0, MENU_REFRESH, 0, "Refresh")
-            .setIcon(R.drawable.ic_menu_refresh);
-        menu.add(0, MENU_SETTINGS, 0, "Preferences")
-            .setIcon(android.R.drawable.ic_menu_manage);
-        menu.add(0, MENU_DONATE, 0, "Donate")
-            .setIcon(R.drawable.ic_menu_heart);
-        menu.add(0, MENU_ABOUT, 0, "About")
-            .setIcon(android.R.drawable.ic_menu_info_details);
-        
+    	
+    	MenuInflater inflater = getMenuInflater();
+    	inflater.inflate(R.menu.mainmenu, menu);
+    	
         if (debuggable())
-            menu.add(0, MENU_DEBUG, 0, "Debug");
+        	menu.findItem(R.id.MENU_DEBUG).setVisible(true);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-        case MENU_HOVER_TEXT:
+    	switch (item.getItemId()) {
+        case R.id.MENU_HOVER_TEXT:
             showHoverText();
             return true;
-        case MENU_REFRESH:
+        case R.id.MENU_REFRESH:
             loadComicNumber(comicInfo.number);
             return true;
-        case MENU_RANDOM:
+        case R.id.MENU_RANDOM:
             loadRandomComic();
             return true;
-        case MENU_SHARE_LINK:
+        case R.id.MENU_SHARE_LINK:
             shareComicLink();
             return true;
-        case MENU_SHARE_IMAGE:
+        case R.id.MENU_SHARE_IMAGE:
             shareComicImage();
             return true;
-        case MENU_SETTINGS:
+        case R.id.MENU_SETTINGS:
             showSettings();
             return true;
-        case MENU_GO_TO_LAST:
+        case R.id.MENU_GO_TO_LAST:
             goToLast();
             return true;
-        case MENU_GO_TO_NEXT:
+        case R.id.MENU_GO_TO_NEXT:
             goToNext();
             return true;
-        case MENU_GO_TO_PREV:
+        case R.id.MENU_GO_TO_PREV:
             goToPrev();
             return true;
-        case MENU_GO_TO_FIRST:
+        case R.id.MENU_GO_TO_FIRST:
             goToFirst();
             return true;
-        case MENU_DEBUG:
+        case R.id.MENU_DEBUG:
             toast("Build.MODEL: \""+Build.MODEL+"\"");
             return true;
-        case MENU_ARCHIVE:
+        case R.id.MENU_ARCHIVE:
+        case R.id.MENU_COMIC_LIST:
             showArchive();
             return true;
-        case MENU_DONATE:
+        case R.id.MENU_DONATE:
             donate();
             return true;
-        case MENU_ABOUT:
+        case R.id.MENU_ABOUT:
             showAbout();
             return true;
-        case MENU_BOOKMARKS:
+        case R.id.MENU_BOOKMARKS:
             showBookmarks();
             return true;
-        case MENU_SEARCH_TITLE:
+        case R.id.MENU_SEARCH_TITLE:
             searchByTitle();
             return true;
         }
-        return false;
+    	
+    	return false;
     }
     
     public void searchByTitle() {
