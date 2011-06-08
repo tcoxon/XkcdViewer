@@ -17,33 +17,31 @@
 			android:layout_weight="1"
 			android:visibility="gone"
 			android:layout_width="wrap_content" android:layout_height="wrap_content" />
-		<Button android:text="&lt;" android:id="@+id/prevBtn"
+		<Button android:id="@+id/prevBtn"
 			android:layout_weight="1"
-			android:layout_width="wrap_content" android:layout_height="wrap_content" />
+			android:layout_width="wrap_content" android:layout_height="wrap_content" android:drawableLeft="@drawable/circleleft32"/>
 		<EditText android:hint="Comic #" android:id="@+id/comicIdSel"
 			android:layout_weight="1"
 			android:singleLine="true"
 			android:imeOptions="actionGo"
-			android:layout_width="wrap_content" android:layout_height="wrap_content" />
-		<Button android:text="&gt;" android:id="@+id/nextBtn"
+			android:layout_width="wrap_content" android:layout_height="wrap_content" android:digits="true" android:gravity="center_vertical|center_horizontal" android:inputType="numberDecimal"/>
+		<Button android:id="@+id/nextBtn"
 			android:layout_weight="1"
-			android:layout_width="wrap_content" android:layout_height="wrap_content" />
-		<Button android:text="&gt;&gt;" android:id="@+id/lastBtn"
+			android:layout_width="wrap_content" android:layout_height="wrap_content" android:drawableRight="@drawable/circleright32"/>
+		<Button android:id="@+id/lastBtn"
 			android:layout_weight="1"
-			android:layout_width="wrap_content" android:layout_height="wrap_content" />
+			android:layout_width="wrap_content" android:layout_height="wrap_content" android:drawableRight="@drawable/arrowright32"/>
 		
         <ImageView
             android:id="@+id/randomBtn"
-            android:src="@drawable/ic_menu_dice"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content" android:src="@drawable/ic_shuffle"/>
     </TableRow>
 	</TableLayout>
+	
+	<TextView android:text="@+id/TextView01" android:layout_width="wrap_content" android:layout_height="wrap_content" android:id="@+id/title"></TextView><RelativeLayout android:id="@+id/RelativeLayout01" android:layout_width="wrap_content" android:layout_height="wrap_content">
+	<net.bytten.xkcdviewer.ClickableWebView android:layout_height="fill_parent" android:layout_width="fill_parent" android:id="@+id/viewer"></net.bytten.xkcdviewer.ClickableWebView><TextView android:text="@+id/TextView01" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_alignTop="@+id/viewer" android:layout_alignRight="@+id/viewer" android:layout_alignLeft="@+id/viewer" android:layout_alignBottom="@+id/viewer" android:gravity="center_vertical|center_horizontal" android:background="@drawable/rbb" android:visibility="gone" android:id="@+id/alttext" android:textSize="12pt"></TextView>
+	
+	</RelativeLayout>
 
-	<TextView android:id="@+id/title"
-		android:layout_width="fill_parent" android:layout_height="wrap_content" />
-	
-	<net.bytten.xkcdviewer.ClickableWebView android:id="@+id/viewer"
-			android:layout_width="fill_parent" android:layout_height="fill_parent" />
-	
 </TableLayout>
