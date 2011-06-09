@@ -39,12 +39,9 @@ import android.content.DialogInterface;
 import android.content.DialogInterface.OnCancelListener;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Configuration;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
@@ -56,7 +53,6 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.SubMenu;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnFocusChangeListener;
@@ -109,7 +105,7 @@ public class XkcdViewerActivity extends Activity {
     public static final String PACKAGE_NAME = "net.bytten.xkcdviewer";
     
 
-    private WebView webview;
+    private HackedWebView webview;
     private TextView title;
     private ComicInfo comicInfo = new ComicInfo();
     private EditText comicIdSel;
@@ -122,36 +118,13 @@ public class XkcdViewerActivity extends Activity {
     
     private ImageView bookmarkBtn = null;
 
-    //
-    // Because Android 1.5 does not have android.os.Build.SDK_INT, we have to simulate
-    // for 1.5 devices, but string parsing is annoying, so we will use SDK_INT if it is
-    // available.
-    // CREDIT: These two methods are from
-    // http://sagistech.blogspot.com/2011/01/buildversionsdkint-on-android-15.html
-    //
-    public static int getSdkInt() {  
-        if (Build.VERSION.RELEASE.startsWith("1.5"))  
-            return 3;  
-         
-        return HelperInternal.getSdkIntInternal();  
-    }  
-      
-    private static class HelperInternal {  
-        private static int getSdkIntInternal() {  
-            return Build.VERSION.SDK_INT;                 
-        }  
-    } 
-    //
-    // !CREDIT:
-    //
-    
     protected void resetContent() {
         //Only hide the title bar if we're running an android less than Android 3.0
-    	if(getSdkInt() < 11)
+    	if(VersionHacks.getSdkInt() < 11)
         	requestWindowFeature(Window.FEATURE_NO_TITLE);
 
         setContentView(R.layout.main);
-        webview = (WebView)findViewById(R.id.viewer);
+        webview = (HackedWebView)findViewById(R.id.viewer);
         title = (TextView)findViewById(R.id.title);
         comicIdSel = (EditText)findViewById(R.id.comicIdSel);
 
@@ -257,8 +230,9 @@ public class XkcdViewerActivity extends Activity {
     
     public void resetZoomControlEnable() {
         final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        final boolean value = prefs.getBoolean("useZoomControls",!isIncredible());
-        setZoomControlEnable(value);
+        final boolean allowPinchZoom = prefs.getBoolean("useZoomControls",!VersionHacks.isIncredible()),
+        			  showZoomButtons = prefs.getBoolean("showZoomButtons", true);
+        setZoomControlEnable(allowPinchZoom, showZoomButtons);
     }
     
     public boolean isReopenLastComic() {
@@ -278,13 +252,19 @@ public class XkcdViewerActivity extends Activity {
         editor.commit();
     }
     
-    public void setZoomControlEnable(boolean b) {
+    public void setZoomControlEnable(boolean allowPinchZoom, boolean showZoomButtons) {
         final ViewGroup zoomParent = (ViewGroup)webview.getParent().getParent();
         if (zoom.getParent() == zoomParent) zoomParent.removeView(zoom);
-        webview.getSettings().setBuiltInZoomControls(b);
-        if (!b) {
-            zoomParent.addView(zoom, ZOOM_PARAMS);
-            zoom.setVisibility(View.GONE);
+        webview.getSettings().setBuiltInZoomControls(allowPinchZoom);
+        webview.setAllowZoomButtons(false);
+        webview.setAllowPinchZoom(allowPinchZoom);
+        if (showZoomButtons) {
+	        if (allowPinchZoom) {
+	        	webview.setAllowZoomButtons(true);
+	        } else {
+	            zoomParent.addView(zoom, ZOOM_PARAMS);
+	            zoom.setVisibility(View.GONE);
+	        }
         }
     }
     
@@ -357,11 +337,6 @@ public class XkcdViewerActivity extends Activity {
 
     private void toast(String msg) {
         Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
-    }
-    
-    public static boolean isIncredible() {
-        return Build.MODEL.toLowerCase().contains("incredible") ||
-            Build.MODEL.toLowerCase().contains("adr6300");
     }
     
     @Override

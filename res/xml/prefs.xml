@@ -2,9 +2,24 @@
 <PreferenceScreen
   xmlns:android="http://schemas.android.com/apk/res/android">
 
-	<CheckBoxPreference android:key="reopenLastComic" android:defaultValue="false" android:summary="At start, reopen the last comic read" android:title="Reopen last read comic"></CheckBoxPreference><CheckBoxPreference
-	  android:key="useZoomControls" android:title="Enable pinch-zoom" android:summary="Only works on capable devices. Causes problems on HTC Incredible" android:defaultValue="true">
-	</CheckBoxPreference>
+	<CheckBoxPreference
+		android:key="reopenLastComic"
+		android:defaultValue="false"
+		android:summary="At start, reopen the last comic read"
+		android:title="Reopen last read comic"
+		></CheckBoxPreference>
+	<CheckBoxPreference
+		android:key="useZoomControls"
+		android:title="Enable pinch-zoom"
+		android:summary="Only works on capable devices. Causes problems on HTC Incredible"
+		android:defaultValue="true"
+		></CheckBoxPreference>
+	<CheckBoxPreference
+		android:key="showZoomButtons"
+		android:title="Show zoom buttons"
+		android:defaultValue="true"
+		android:summary="Whether to show the zoom buttons on drag / pinch"
+		></CheckBoxPreference>
 
 
 

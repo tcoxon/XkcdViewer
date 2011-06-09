@@ -12,7 +12,8 @@ public class SettingsActivity extends PreferenceActivity {
         addPreferencesFromResource(R.xml.prefs);
  
         final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        final boolean value = prefs.getBoolean("useZoomControls",!XkcdViewerActivity.isIncredible());
+        final boolean value = prefs.getBoolean("useZoomControls",
+                !VersionHacks.isIncredible() && VersionHacks.getSdkInt() >= 5);
         ((CheckBoxPreference)findPreference("useZoomControls"))
             .setChecked(value);
     }
