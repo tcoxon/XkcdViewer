@@ -20,7 +20,7 @@
     
     
     <item android:id="@+id/MENU_DONATE" android:title="@string/mainmenu_donate" android:icon="@drawable/ic_menu_heart"></item>
-    <item android:id="@+id/MENU_ABOUT" android:title="@string/mainmenu_about" android:icon="@android:drawable/ic_menu_info_details"></item><item android:id="@+id/MENU_DEBUG" android:title="@string/mainmenu_debug" android:visible="false"></item>
+    <item android:id="@+id/MENU_ABOUT" android:title="@string/mainmenu_about" android:icon="@android:drawable/ic_menu_info_details"></item>
     
     
     

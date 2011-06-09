@@ -359,17 +359,6 @@ public class XkcdViewerActivity extends Activity {
         Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
     }
     
-    private boolean debuggable() {
-        final PackageManager pm = getPackageManager();
-        try {
-            final ApplicationInfo app = pm.getApplicationInfo(PACKAGE_NAME, 0);
-            final boolean debuggable = (app.flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0;
-            return debuggable;
-        } catch (PackageManager.NameNotFoundException ex) {
-            return false;
-        }
-    }
-    
     public static boolean isIncredible() {
         return Build.MODEL.toLowerCase().contains("incredible") ||
             Build.MODEL.toLowerCase().contains("adr6300");
@@ -380,9 +369,6 @@ public class XkcdViewerActivity extends Activity {
         
     	MenuInflater inflater = getMenuInflater();
     	inflater.inflate(R.menu.mainmenu, menu);
-        
-        if (debuggable())
-        	menu.findItem(R.id.MENU_DEBUG).setVisible(true);
         return true;
     }
 
@@ -418,9 +404,6 @@ public class XkcdViewerActivity extends Activity {
             return true;
         case R.id.MENU_GO_TO_FIRST:
             goToFirst();
-            return true;
-        case R.id.MENU_DEBUG:
-            toast("Build.MODEL: \""+Build.MODEL+"\"");
             return true;
         case R.id.MENU_ARCHIVE:
             showArchive();
