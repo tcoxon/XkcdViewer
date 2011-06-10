@@ -292,8 +292,7 @@ public class XkcdViewerActivity extends Activity {
                     if (m.matches()) {
                         loadComicNumber(null);
                     } else {
-                        Toast.makeText(this, "xkcdViewer can't display this content.",
-                                Toast.LENGTH_SHORT).show();
+                        toast("xkcdViewer can't display this content.");
                         this.finish();
                     }
                 }
@@ -516,16 +515,14 @@ public class XkcdViewerActivity extends Activity {
                 public void cancel() {
                     handler.post(new Runnable() {
                         public void run() {
-                            Toast.makeText(XkcdViewerActivity.this,
-                                    "Canceled image sharing.",
-                                    Toast.LENGTH_SHORT).show();
+                            toast("Canceled image sharing.");
                         }
                     });
                 }
             });
 
         } else {
-            Toast.makeText(this, "No image loaded.", Toast.LENGTH_SHORT).show(); 
+            toast("No image loaded."); 
         }
     }
 
