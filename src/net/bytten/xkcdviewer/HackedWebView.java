@@ -57,7 +57,7 @@ public class HackedWebView extends WebView {
     private boolean isPointerDown(MotionEvent evt) {
         if (VersionHacks.getSdkInt() >= 5)
             return PointerDownHack.isPointerDown(evt);
-        return false;
+        return evt.getAction() == MotionEvent.ACTION_DOWN;
     }
     private int getPointerCount(MotionEvent evt) {
         if (VersionHacks.getSdkInt() >= 5)
