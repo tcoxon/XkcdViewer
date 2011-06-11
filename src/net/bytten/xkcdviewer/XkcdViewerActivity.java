@@ -816,7 +816,7 @@ public class XkcdViewerActivity extends Activity {
     }
     
     @Override
-    protected Dialog onCreateDialog(int id, Bundle bundle) {
+    protected Dialog onCreateDialog(int id) {
     	// Set up variables for a dialog and a dialog builder. Only need one of each.
     	Dialog dialog = null;
     	AlertDialog.Builder builder = null;
@@ -906,12 +906,17 @@ public class XkcdViewerActivity extends Activity {
     }
 
     @Override
-    protected void onPrepareDialog(int id, Dialog dialog, Bundle bundle) {
+    protected void onPrepareDialog(int id, Dialog dialog) {
+    	//Get an alertdialog so we can edit it.
+    	AlertDialog ad = (AlertDialog) dialog;
     	// Determine the type of dialog based on the integer passed. These are defined in constants
     	// at the top of the class.
     	switch(id){
+    	case DIALOG_SHOW_HOVER_TEXT:
+    		ad.setMessage(comicInfo.altText);
+    		break;
     	case DIALOG_FAILED:
-    		AlertDialog ad = (AlertDialog) dialog;
+    		ad = (AlertDialog) dialog;
     		ad.setMessage("Comic loading failed: " + failedArgs);
     		break;
 		default:
