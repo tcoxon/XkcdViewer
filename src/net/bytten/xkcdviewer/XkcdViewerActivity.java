@@ -532,6 +532,11 @@ public class XkcdViewerActivity extends Activity {
             toast("No image loaded."); 
         }
     }
+    
+    private void allowInterrupt() throws InterruptedException {
+        if (Thread.interrupted())
+            throw new InterruptedException();
+    }
 
     public Thread imageAttachment(final Uri img, final ImageAttachmentReceiver r) {
         Thread t = new Thread() {
@@ -547,7 +552,7 @@ public class XkcdViewerActivity extends Activity {
                     int count = -1;
                     while ((count = is.read(buffer)) != -1) {
                         fos.write(buffer, 0, count);
-                        Thread.sleep(0); // Give a chance for thread interrupts to get through
+                        allowInterrupt();
                     }
 
                     r.finish();
@@ -765,7 +770,9 @@ public class XkcdViewerActivity extends Activity {
         }.start(this, "Loading comic...", new Object[]{null});
     }
     
-    private String blockingReadUri(Uri uri) throws IOException {
+    private String blockingReadUri(Uri uri) throws IOException,
+        InterruptedException
+    {
         StringBuffer sb = new StringBuffer();
         BufferedReader br = new BufferedReader(new InputStreamReader(
                 new URL(uri.toString()).openStream()));
@@ -773,14 +780,16 @@ public class XkcdViewerActivity extends Activity {
         while ((line = br.readLine()) != null) {
             sb.append(line);
             sb.append('\n');
+            allowInterrupt();
         }
         return sb.toString();
     }
     
-    public ComicInfo fetchComicInfo(Uri uri) throws IOException, JSONException {
+    public ComicInfo fetchComicInfo(Uri uri) throws IOException, JSONException,
+        InterruptedException
+    {
         String text = blockingReadUri(uri);
         JSONObject obj = (JSONObject)new JSONTokener(text).nextValue();
-        Thread.yield();
         ComicInfo data = new ComicInfo();
         data.img = Uri.parse(obj.getString("img"));
         data.alt = obj.getString("alt");
