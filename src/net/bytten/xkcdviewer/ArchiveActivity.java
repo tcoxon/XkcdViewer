@@ -126,7 +126,7 @@ public class ArchiveActivity extends ListActivity {
 
     /* Archive-loading implementation using AsyncTasks follows.
      * 
-     * load* methods must be called in UI thread
+     * load*, show* methods must be called in UI thread
      * fetch* methods must be called in a background thread
      */
     
@@ -164,14 +164,7 @@ public class ArchiveActivity extends ListActivity {
             
             protected List<ArchiveItem> doInBackground(Object... params) {
                 try {
-                    switch (loadType) {
-                    case BOOKMARKS:
-                        return fetchBookmarks();
-                    case SEARCH_TITLE:
-                        return fetchSearchByTitleResults(query.substring(2));
-                    default:
-                        return fetchArchive();
-                    }
+                    return fetchContent(loadType, query);
                 } catch (Throwable e) {
                     failReason = e;
                     return null;
@@ -181,17 +174,7 @@ public class ArchiveActivity extends ListActivity {
             protected void onPostExecute(List<ArchiveItem> result) {
                 super.onPostExecute(result);
                 if (result != null) {
-                    switch (loadType) {
-                    case BOOKMARKS:
-                        setTitle(R.string.app_bookmarks_label);
-                        break;
-                    case SEARCH_TITLE:
-                        setTitle(R.string.app_search_title_label);
-                        break;
-                    default:
-                        setTitle(R.string.app_archive_label);
-                    }
-                    setListAdapter(new ArchiveAdapter(result));
+                    showResults(loadType, result);
                 } else {
                     failReason.printStackTrace();
                     /* Pattern match against type of failReason */
@@ -210,6 +193,33 @@ public class ArchiveActivity extends ListActivity {
             }
             
         }.start(this, "Loading archive...", new Object[]{null});
+    }
+    
+    protected List<ArchiveItem> fetchContent(LoadType loadType, String query)
+        throws Throwable
+    {
+        switch (loadType) {
+        case BOOKMARKS:
+            return fetchBookmarks();
+        case SEARCH_TITLE:
+            return fetchSearchByTitleResults(query.substring(2));
+        default:
+            return fetchArchive();
+        }
+    }
+    
+    protected void showResults(LoadType loadType, List<ArchiveItem> results) {
+        switch (loadType) {
+        case BOOKMARKS:
+            setTitle(R.string.app_bookmarks_label);
+            break;
+        case SEARCH_TITLE:
+            setTitle(R.string.app_search_title_label);
+            break;
+        default:
+            setTitle(R.string.app_archive_label);
+        }
+        setListAdapter(new ArchiveAdapter(results));
     }
     
     protected List<ArchiveItem> fetchBookmarks() throws Throwable {
