@@ -87,12 +87,7 @@ public class XkcdViewerActivity extends Activity {
         public boolean bookmarked = false;
     }
 
-    static Pattern comicPattern = Pattern.compile(
-                       "<img\\ssrc=\"(http://[^\"]*imgs\\.xkcd\\.com/comics/[^\"]*)\"\\s"+
-                       "title=\"([^\"]*)\" alt=\"([^\"]*)\""),
-                   comicNumberPattern = Pattern.compile(
-                       "<h3>Permanent link to this comic: "+
-                       "http://xkcd\\.com/([0-9]+)/</h3>"),
+    static private Pattern
                    xkcdHomePattern = Pattern.compile(
                        "http://(www\\.)?xkcd\\.com(/)?"),
                    comicUrlPattern = Pattern.compile(
