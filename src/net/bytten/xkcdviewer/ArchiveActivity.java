@@ -37,141 +37,19 @@ public class ArchiveActivity extends ListActivity {
     
     public Handler handler = new Handler();
     
-    protected LoadType loadType = LoadType.ARCHIVE;
-    
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         
-        resetContent();
+        loadContent();
     }
     
-    public void resetContent() {
-        final Thread[] loadThread = {null};
-        final List<ArchiveItem> items = new ArrayList<ArchiveItem>();
-        final Intent intent = getIntent();
-
-        final ProgressDialog pd = ProgressDialog.show(this,
-                "xkcdViewer", "Loading archive...", true, true,
-                new OnCancelListener() {
-            public void onCancel(DialogInterface dialog) {
-                if (loadThread[0] != null) {
-                    // tell loading to stop
-                    loadThread[0].interrupt();
-                }
-            }
-        });
-
-        loadThread[0] = new Thread(new Runnable() {
-            public void run() {
-                try {
-                    String query = "";
-                    if (intent.getData() != null &&
-                        intent.getData().getQuery() != null)
-                    {
-                        query = intent.getData().getQuery();
-                    }
-                    
-                    if (query.equals("bookmarks")) {
-                        loadType = LoadType.BOOKMARKS;
-                        loadBookmarks(items);
-                    } else if (query.length() >= 2 &&
-                        query.substring(0, 2).equals("q="))
-                    {
-                        loadType = LoadType.SEARCH_TITLE;
-                        loadSearchTitle(items, query.substring(2));
-                    } else {
-                        loadArchive(items);
-                    }
-                    
-                    handler.post(new Runnable() {
-                        public void run() {
-                            switch (loadType) {
-                            case BOOKMARKS:
-                                setTitle(R.string.app_bookmarks_label);
-                                break;
-                            case SEARCH_TITLE:
-                                setTitle(R.string.app_search_title_label);
-                                break;
-                            default:
-                                setTitle(R.string.app_archive_label);
-                            }
-                            setListAdapter(new ArchiveAdapter(items));
-                        }
-                    });
-                    
-                } catch (MalformedURLException e) {
-                    failed("Malformed URL: "+e);
-                    e.printStackTrace();
-                } catch (IOException e) {
-                    failed("IO error: "+e);
-                    e.printStackTrace();
-                } catch (InterruptedException e) {
-                    // Do nothing. Loading was cancelled.
-                } catch (Throwable e) {
-                    failed(e.toString());
-                    e.printStackTrace();
-                } finally {
-                    handler.post(new Runnable() {
-                        public void run() {
-                            pd.dismiss();
-                        }
-                    });
-                }   
-            }
-        });
-        loadThread[0].start();
-    }
-
-    protected void loadBookmarks(List<ArchiveItem> items) throws Throwable {
-        items.addAll(BookmarksHelper.getBookmarks(this));
-    }
-    
-    protected void loadSearchTitle(List<ArchiveItem> items, String titleQuery) throws Throwable {
-        String[] titleWords = titleQuery.toLowerCase().split("\\s");
-        loadArchive(items);
-        for (int i = 0; i < items.size(); i++) {
-            String title = items.get(i).title.toLowerCase();
-            for (String w: titleWords) {
-                if (title.indexOf(w) == -1) {
-                    items.remove(i);
-                    i--;
-                    break;
-                }
-            }
-        }
-    }
-    
-    protected void loadArchive(List<ArchiveItem> items) throws Throwable {
-        URL url = new URL("http://www.xkcd.com/archive/");
-        BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream()));
-        
-        String line;
-        while ((line = br.readLine()) != null) {
-            Thread.sleep(0); // allow space for interruption
-            
-            Matcher m = archiveItemPattern.matcher(line);
-            while (m.find()) {
-                ArchiveItem item = new ArchiveItem();
-                item.comicNumber = m.group(1);
-                item.title = m.group(3);
-                if (BookmarksHelper.isBookmarked(ArchiveActivity.this, item))
-                    item.bookmarked = true;
-                items.add(item);
-            }
-        }
-        br.close();
-    }
-    
+    /* Only call this from the UI thread */
     protected void failed(final String msg) {
-        handler.post(new Runnable() {
-            public void run() {
-                AlertDialog.Builder builder = new AlertDialog.Builder(ArchiveActivity.this);
-                builder.setMessage(msg);
-                AlertDialog alert = builder.create();
-                alert.show();
-            }
-        });
+        AlertDialog.Builder builder = new AlertDialog.Builder(ArchiveActivity.this);
+        builder.setMessage(msg);
+        AlertDialog alert = builder.create();
+        alert.show();
     }
     
     class ArchiveAdapter extends ArrayAdapter<ArchiveItem> {
@@ -245,4 +123,142 @@ public class ArchiveActivity extends ListActivity {
         public boolean bookmarked = false;
         public String title, comicNumber;
     }
+
+    /* Archive-loading implementation using AsyncTasks follows.
+     * 
+     * load* methods must be called in UI thread
+     * fetch* methods must be called in a background thread
+     */
+    
+    private String getQuery(Intent i) {
+        if (i != null && i.getData() != null &&
+            i.getData().getQuery() != null)
+        {
+            return i.getData().getQuery();
+        } else {
+            return "";
+        }
+    }
+    
+    private LoadType getLoadType(String q) {
+        if (q.equals("bookmarks")) {
+            return LoadType.BOOKMARKS;
+        } else if (q.length() >= 2 &&
+            q.substring(0,2).equals("q="))
+        {
+            return LoadType.SEARCH_TITLE;
+        } else {
+            return LoadType.ARCHIVE;
+        }
+    }
+    
+    public void loadContent() {
+        final Intent intent = getIntent();
+        final String query = getQuery(intent);
+        final LoadType loadType = getLoadType(query);
+        
+        new Utility.CancellableAsyncTaskWithProgressDialog<Object,
+            List<ArchiveItem> >()
+        {
+            protected Throwable failReason = null;
+            
+            protected List<ArchiveItem> doInBackground(Object... params) {
+                try {
+                    switch (loadType) {
+                    case BOOKMARKS:
+                        return fetchBookmarks();
+                    case SEARCH_TITLE:
+                        return fetchSearchByTitleResults(query.substring(2));
+                    default:
+                        return fetchArchive();
+                    }
+                } catch (Throwable e) {
+                    failReason = e;
+                    return null;
+                }
+            }
+            
+            protected void onPostExecute(List<ArchiveItem> result) {
+                super.onPostExecute(result);
+                if (result != null) {
+                    switch (loadType) {
+                    case BOOKMARKS:
+                        setTitle(R.string.app_bookmarks_label);
+                        break;
+                    case SEARCH_TITLE:
+                        setTitle(R.string.app_search_title_label);
+                        break;
+                    default:
+                        setTitle(R.string.app_archive_label);
+                    }
+                    setListAdapter(new ArchiveAdapter(result));
+                } else {
+                    failReason.printStackTrace();
+                    /* Pattern match against type of failReason */
+                    try {
+                        throw failReason;
+                    } catch (MalformedURLException e) {
+                        failed("Malformed URL: "+e);
+                    } catch (IOException e) {
+                        failed("IO error: "+e);
+                    } catch (InterruptedException e) {
+                        // Do nothing. Loading was cancelled.
+                    } catch (Throwable e) {
+                        failed(e.toString());
+                    }
+                }
+            }
+            
+        }.start(this, "Loading archive...", new Object[]{null});
+    }
+    
+    protected List<ArchiveItem> fetchBookmarks() throws Throwable {
+        return BookmarksHelper.getBookmarks(this);
+    }
+    
+    protected List<ArchiveItem> fetchSearchByTitleResults(String titleQuery)
+        throws Throwable
+    {
+        String[] titleWords = titleQuery.toLowerCase().split("\\s");
+        List<ArchiveItem> items = fetchArchive();
+        Utility.allowInterrupt();
+        for (int i = 0; i < items.size(); i++) {
+            String title = items.get(i).title.toLowerCase();
+            for (String w: titleWords) {
+                if (title.indexOf(w) == -1) {
+                    items.remove(i);
+                    i--;
+                    break;
+                }
+            }
+        }
+        return items;
+    }
+    
+    protected List<ArchiveItem> fetchArchive() throws Throwable {
+        List<ArchiveItem> items = new ArrayList<ArchiveItem>();
+        URL url = new URL("http://www.xkcd.com/archive/");
+        BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream()));
+        
+        try {
+            String line;
+            while ((line = br.readLine()) != null) {
+                Matcher m = archiveItemPattern.matcher(line);
+                while (m.find()) {
+                    ArchiveItem item = new ArchiveItem();
+                    item.comicNumber = m.group(1);
+                    item.title = m.group(3);
+                    if (BookmarksHelper.isBookmarked(ArchiveActivity.this, item))
+                        item.bookmarked = true;
+                    items.add(item);
+                }
+
+                Utility.allowInterrupt();
+            }
+        } finally {
+            br.close();
+        }
+        return items;
+    }
+    
 }
