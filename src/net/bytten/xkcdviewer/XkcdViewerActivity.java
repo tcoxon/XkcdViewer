@@ -68,6 +68,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 import android.widget.Toast;
+import android.content.Context;
+import android.view.inputmethod.InputMethodManager;
 
 public class XkcdViewerActivity extends Activity {
 
@@ -151,8 +153,13 @@ public class XkcdViewerActivity extends Activity {
         }); 
         comicIdSel.setOnFocusChangeListener(new OnFocusChangeListener() {
             public void onFocusChange(View v, boolean hasFocus) {
+                InputMethodManager imm = (InputMethodManager)getSystemService(
+                    Context.INPUT_METHOD_SERVICE);
                 if (hasFocus) {
                     comicIdSel.setText("");
+                    imm.showSoftInput(comicIdSel, InputMethodManager.SHOW_IMPLICIT);
+                } else {
+                    imm.hideSoftInputFromWindow(comicIdSel.getWindowToken(), 0);
                 }
             }
         });
