@@ -41,13 +41,11 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnCancelListener;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Configuration;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
@@ -533,11 +531,6 @@ public class XkcdViewerActivity extends Activity {
         }
     }
     
-    private void allowInterrupt() throws InterruptedException {
-        if (Thread.interrupted())
-            throw new InterruptedException();
-    }
-
     public Thread imageAttachment(final Uri img, final ImageAttachmentReceiver r) {
         Thread t = new Thread() {
             public void run() {
@@ -552,7 +545,7 @@ public class XkcdViewerActivity extends Activity {
                     int count = -1;
                     while ((count = is.read(buffer)) != -1) {
                         fos.write(buffer, 0, count);
-                        allowInterrupt();
+                        Utility.allowInterrupt();
                     }
 
                     r.finish();
@@ -607,35 +600,6 @@ public class XkcdViewerActivity extends Activity {
      * fetch* methods must be called in a background thread
      */
     
-    private static abstract class CancellableAsyncTaskWithProgressDialog<Params, Result>
-        extends AsyncTask<Params, Integer, Result>
-    {
-        private ProgressDialog pd;
-        
-        public void start(Context cxt, String pdText, Params... params) {
-            pd = ProgressDialog.show(cxt,
-                    "xkcdViewer", pdText, true, true,
-                    new OnCancelListener() {
-                public void onCancel(DialogInterface dialog) {
-                    cancel(true);
-                }
-            });
-            execute(params);
-        }
-        
-        protected void onProgressUpdate(Integer... progress) {
-            pd.setProgress(progress[0]);
-        }
-        
-        protected void onCancelled(Result result) {
-            pd.dismiss();
-        }
-        
-        protected void onPostExecute(Result result) {
-            pd.dismiss();
-        }
-    }
-    
     public int currentComicNumber() {
         System.out.println("Current comic: "+Integer.toString(comicInfo.num));
         return comicInfo.num;
@@ -673,7 +637,7 @@ public class XkcdViewerActivity extends Activity {
         /* Can't just choose a random number and go to the comic, because if
          * the user cancelled the comic loading at start, we won't know how
          * many comics there are! */
-        new CancellableAsyncTaskWithProgressDialog<Object, Uri>() {
+        new Utility.CancellableAsyncTaskWithProgressDialog<Object, Uri>() {
 
             protected Uri doInBackground(Object... params) {
                 try {
@@ -724,7 +688,7 @@ public class XkcdViewerActivity extends Activity {
     
     public void loadComic(final Uri uri) {
         
-        new CancellableAsyncTaskWithProgressDialog<Object, ComicInfoOrError>() {
+        new Utility.CancellableAsyncTaskWithProgressDialog<Object, ComicInfoOrError>() {
 
             protected ComicInfoOrError doInBackground(Object... params) {
                 try {
@@ -780,7 +744,7 @@ public class XkcdViewerActivity extends Activity {
         while ((line = br.readLine()) != null) {
             sb.append(line);
             sb.append('\n');
-            allowInterrupt();
+            Utility.allowInterrupt();
         }
         return sb.toString();
     }
