@@ -37,6 +37,7 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnCancelListener;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager.NameNotFoundException;
@@ -56,6 +57,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnFocusChangeListener;
+import android.view.inputmethod.InputMethodManager;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.webkit.WebChromeClient;
@@ -153,6 +155,12 @@ public class XkcdViewerActivity extends Activity {
             public void onFocusChange(View v, boolean hasFocus) {
                 if (hasFocus) {
                     comicIdSel.setText("");
+                    InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                    imm.showSoftInput(comicIdSel, InputMethodManager.SHOW_IMPLICIT);
+                }
+                else{
+                	InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                	imm.hideSoftInputFromWindow(comicIdSel.getWindowToken(), 0);
                 }
             }
         });
@@ -616,6 +624,7 @@ public class XkcdViewerActivity extends Activity {
                     // tell loading to stop
                     currentLoadThread.interrupt();
                 }
+                System.out.println("Dialog canceled");
             }
         });
 
@@ -657,7 +666,7 @@ public class XkcdViewerActivity extends Activity {
     }
 
     public void loadComic(URL url) throws IOException, CouldntParseComicPage, InterruptedException {
-        final ComicInfo _comicInfo = getComicInfoFromPage(url);
+        final ComicInfo _comicInfo = getComicInfoFromPage(url);        
         // Thread.sleep(0) gives interrupts a chance to get through.
         Thread.sleep(0);
         handler.post(new Runnable() {
@@ -677,12 +686,11 @@ public class XkcdViewerActivity extends Activity {
                                 webview.stopLoading();
                             }
                         });
-                pd.setProgress(0);
                 webview.setWebViewClient(new WebViewClient() {
                     @Override
                     public void onPageFinished(WebView view, String url) {
                         super.onPageFinished(view, url);
-
+                        System.out.println("Page finished");
                         pd.dismiss();
                     }
                 });
@@ -690,7 +698,8 @@ public class XkcdViewerActivity extends Activity {
                     @Override
                     public void onProgressChanged(WebView view, int newProgress) {
                         super.onProgressChanged(view, newProgress);
-                        pd.setProgress(newProgress * 100);
+                        pd.setProgress(newProgress);
+                        System.out.println(newProgress);
                     }
                 });
                 webview.loadUrl(comicInfo.imageURL.toString());
