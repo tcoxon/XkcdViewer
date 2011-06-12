@@ -689,7 +689,7 @@ public class XkcdViewerActivity extends Activity {
                     @Override
                     public void onPageFinished(WebView view, String url) {
                         super.onPageFinished(view, url);
-                        pd.dismiss();
+                        pd.dismiss();                        
                     }
                 });
                 webview.setWebChromeClient(new WebChromeClient() {
