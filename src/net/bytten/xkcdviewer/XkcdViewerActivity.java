@@ -624,7 +624,6 @@ public class XkcdViewerActivity extends Activity {
                     // tell loading to stop
                     currentLoadThread.interrupt();
                 }
-                System.out.println("Dialog canceled");
             }
         });
 
@@ -690,7 +689,6 @@ public class XkcdViewerActivity extends Activity {
                     @Override
                     public void onPageFinished(WebView view, String url) {
                         super.onPageFinished(view, url);
-                        System.out.println("Page finished");
                         pd.dismiss();
                     }
                 });
@@ -698,8 +696,7 @@ public class XkcdViewerActivity extends Activity {
                     @Override
                     public void onProgressChanged(WebView view, int newProgress) {
                         super.onProgressChanged(view, newProgress);
-                        pd.setProgress(newProgress);
-                        System.out.println(newProgress);
+                        
                     }
                 });
                 webview.loadUrl(comicInfo.imageURL.toString());
