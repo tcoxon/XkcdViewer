@@ -462,46 +462,7 @@ public class XkcdViewerActivity extends Activity {
         return false;
     }
     
-    /*public void searchByTitle() {
-        AlertDialog.Builder alert = new AlertDialog.Builder(this);
-        final EditText input = new EditText(this);
-        alert.setTitle("Search by Title");
-        alert.setIcon(android.R.drawable.ic_menu_search);
-        alert.setView(input);
-        alert.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int which) {
-                String query = input.getText().toString();
-                Uri uri = Uri.parse("http://xkcd.com/archive/?q="+Uri.encode(query));
-                Intent i = new Intent(XkcdViewerActivity.this, ArchiveActivity.class);
-                i.setAction(Intent.ACTION_VIEW);
-                i.setData(uri);
-                startActivity(i);
-            }
-        });
-        alert.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.cancel();
-            }
-        });
-        alert.show();
-    }*/
-    
-    /*public void showAbout() {
-        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle(R.string.app_name);
-        builder.setIcon(android.R.drawable.ic_menu_info_details);
-        builder.setNegativeButton(android.R.string.ok, null);
-        builder.setNeutralButton("Donate", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int which) {
-                donate();
-            }
-        });
-        final View v = LayoutInflater.from(this).inflate(R.layout.about, null);
-        final TextView tv = (TextView)v.findViewById(R.id.aboutText);
-        tv.setText(getString(R.string.aboutText, getVersion()));
-        builder.setView(v);
-        builder.create().show();
-    }*/
+
     
     public String getVersion() {
         try {
