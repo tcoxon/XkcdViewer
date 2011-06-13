@@ -29,6 +29,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -61,6 +62,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnFocusChangeListener;
 import android.view.ViewGroup;
+import android.view.ViewGroup.LayoutParams;
 import android.view.Window;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
@@ -123,9 +125,10 @@ public class XkcdViewerActivity extends Activity {
     
     private ImageView bookmarkBtn = null;
 
-    // Android 1.5 doesn't support an arguments bundle for showDialog,
-    // so we need to pass in our arguments another way.
-    private String failedArgs = null;
+    // Prep the errorStack and the failedDialog so we can get a reference to it later.
+    private ArrayList<String> errorStack = new ArrayList<String>();
+    private AlertDialog failedDialog;
+    
     // Constants defining dialogs
     static final int DIALOG_SHOW_HOVER_TEXT=0;
     static final int DIALOG_SHOW_ABOUT=1;
@@ -159,7 +162,7 @@ public class XkcdViewerActivity extends Activity {
         //Only hide the title bar if we're running an android less than Android 3.0
     	if(getSdkInt() < 11)
         	requestWindowFeature(Window.FEATURE_NO_TITLE);
-
+    	
         setContentView(R.layout.main);
         webview = (WebView)findViewById(R.id.viewer);
         title = (TextView)findViewById(R.id.title);
@@ -232,7 +235,10 @@ public class XkcdViewerActivity extends Activity {
             }
         });
         refreshBookmarkBtn();
-        failed("oh my god failure");
+/*        failed("oh my god failure");
+        failed("holy crap a test");
+        failed("ee yay yesu domine");*/
+        showFailedDialogIfErrors();
     }
     
     public void refreshBookmarkBtn() {
@@ -584,6 +590,8 @@ public class XkcdViewerActivity extends Activity {
         } else {
             Toast.makeText(this, "No image loaded.", Toast.LENGTH_SHORT).show(); 
         }
+        
+        showFailedDialogIfErrors();
     }
 
     public Thread imageAttachment(final URL imageURL, final ImageAttachmentReceiver r) {
@@ -627,37 +635,29 @@ public class XkcdViewerActivity extends Activity {
         return "http://xkcd.com/"+comicInfo.number+"/";
     }
 
-/*    public void showHoverText() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(XkcdViewerActivity.this);
-        builder.setMessage(comicInfo.altText);
-        builder.setNeutralButton("Close", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.dismiss();
-            }
-        });
-        AlertDialog alert = builder.create();
-        alert.show();
-    }*/
-
+    // This method allows for an error to be added to the error stack.
+    // Call showFailedDialogIfErrors() after all calls to this method
+    // inside any method that calls this method.
     public void failed(final String reason) {
-    	//For some reason this part causes an error in android 1.5. Using old method for this
-    	//dialog till I figure it out.
-		// Android 1.5 doesn't support an args bundle for showDialog, so we can't use it here.
-    	failedArgs = reason;
-    	//Bundle b = new Bundle();
-    	//b.putString("error", reason);
-    	showDialog(DIALOG_FAILED);
-    	
-    	
-/*        handler.post(new Runnable() {
-            public void run() {
-                AlertDialog.Builder builder = new AlertDialog.Builder(XkcdViewerActivity.this);
-                builder.setMessage("Comic loading failed: "+reason);
-                AlertDialog alert = builder.create();
-                alert.show();
-            }
-        });*/
+    	if(failedDialog != null){
+			if(!failedDialog.isShowing())
+				errorStack.clear();
+		}
+    	errorStack.add(reason);
     }
+    
+    // This method should be called after the last call to failed() in all methods
+    // that call failed().
+	private void showFailedDialogIfErrors() {
+		if(errorStack.size() != 0)
+		{
+			if(failedDialog != null){
+				if(failedDialog.isShowing())
+					failedDialog.dismiss();
+			}
+        	showDialog(DIALOG_FAILED);
+		}
+	}
 
     public int getComicNumber() {
         try {
@@ -719,6 +719,13 @@ public class XkcdViewerActivity extends Activity {
                             pd.dismiss();
                         }
                     });
+                    runOnUiThread(new Runnable() {
+						
+						@Override
+						public void run() {
+							showFailedDialogIfErrors();
+						}
+					});
                 }
             }
         });
@@ -884,23 +891,19 @@ public class XkcdViewerActivity extends Activity {
 	        builder = null;
 			break;
 		case DIALOG_FAILED:
-			//Build and show the Failed dialog
-			String err = failedArgs;
+			AlertDialog.Builder adb = new AlertDialog.Builder(this);
+			adb.setTitle("Errors");
+			adb.setIcon(android.R.drawable.alert_dark_frame);
 			
-			dialog = new Dialog(getApplicationContext());
-			dialog.setContentView(R.layout.custom_dialog);
-			dialog.setTitle("Errors and Failures");
+    		String errList = "";
+    		for(int i = 0; i < errorStack.size();i++)
+    		{
+    			errList += errorStack.get(i) + "\r\n";
+    		}
+    		adb.setMessage(errList);
 			
-			LinearLayout errorList = (LinearLayout) dialog.findViewById(R.id.customDialogLinearLayoutMessages);
-
-			for(int i = 0; i < 10; i++)
-			{
-				TextView t = new TextView(this);
-				t.setText("This is a test of this thing. " + i);
-				errorList.addView(t);
-			}
-			
-			
+    		failedDialog = adb.create();
+			dialog = failedDialog;
 			break;
 		default:
 			dialog = null;
@@ -911,18 +914,25 @@ public class XkcdViewerActivity extends Activity {
 
     @Override
     protected void onPrepareDialog(int id, Dialog dialog) {
-    	//Get an alertdialog so we can edit it.
-    	AlertDialog ad = (AlertDialog) dialog;
     	// Determine the type of dialog based on the integer passed. These are defined in constants
     	// at the top of the class.
     	switch(id){
     	case DIALOG_SHOW_HOVER_TEXT:
-    		ad.setMessage(comicInfo.altText);
+    		//Get an alertdialog so we can edit it.
+    		AlertDialog adh = (AlertDialog) dialog;
+    		adh.setMessage(comicInfo.altText);
     		break;
-    	/*case DIALOG_FAILED:
-    		ad = (AlertDialog) dialog;
-    		ad.setMessage("Comic loading failed: " + failedArgs);
-    		break;*/
+    	case DIALOG_FAILED:
+    		AlertDialog adf = (AlertDialog) dialog;
+    		
+    		String errList = "";
+    		for(int i = 0; i < errorStack.size();i++)
+    		{
+    			errList += errorStack.get(i) + "\r\n";
+    		}
+    		adf.setMessage(errList);
+    		failedDialog = adf;
+    		break;
 		default:
 			break;
     	}
