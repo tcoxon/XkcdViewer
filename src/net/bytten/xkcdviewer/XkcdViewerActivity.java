@@ -62,7 +62,6 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnFocusChangeListener;
 import android.view.ViewGroup;
-import android.view.ViewGroup.LayoutParams;
 import android.view.Window;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
@@ -71,7 +70,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 import android.widget.Toast;
@@ -235,9 +233,7 @@ public class XkcdViewerActivity extends Activity {
             }
         });
         refreshBookmarkBtn();
-/*        failed("oh my god failure");
-        failed("holy crap a test");
-        failed("ee yay yesu domine");*/
+
         showFailedDialogIfErrors();
     }
     
@@ -680,6 +676,7 @@ public class XkcdViewerActivity extends Activity {
                             pd.dismiss();
                         }
                     });
+                    //Because we have to run UI events on the UI thread...
                     runOnUiThread(new Runnable() {
 						
 						@Override
@@ -852,6 +849,8 @@ public class XkcdViewerActivity extends Activity {
 	        builder = null;
 			break;
 		case DIALOG_FAILED:
+			// Probably doesn't need its own builder, but because this is a special case
+			// dialog I gave it one.
 			AlertDialog.Builder adb = new AlertDialog.Builder(this);
 			adb.setTitle("Errors");
 			adb.setIcon(android.R.drawable.alert_dark_frame);
@@ -863,6 +862,8 @@ public class XkcdViewerActivity extends Activity {
     		}
     		adb.setMessage(errList);
 			
+    		//Set failedDialog to our dialog so we can dismiss
+    		//it manually
     		failedDialog = adb.create();
 			dialog = failedDialog;
 			break;
@@ -884,6 +885,7 @@ public class XkcdViewerActivity extends Activity {
     		adh.setMessage(comicInfo.altText);
     		break;
     	case DIALOG_FAILED:
+    		//Get the alertdialog for the failedDialog
     		AlertDialog adf = (AlertDialog) dialog;
     		
     		String errList = "";
@@ -892,6 +894,8 @@ public class XkcdViewerActivity extends Activity {
     			errList += errorStack.get(i) + "\r\n";
     		}
     		adf.setMessage(errList);
+    		//Set failedDialog to our dialog so we can dismiss
+    		//it manually
     		failedDialog = adf;
     		break;
 		default:
