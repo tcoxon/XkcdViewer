@@ -233,8 +233,6 @@ public class XkcdViewerActivity extends Activity {
             }
         });
         refreshBookmarkBtn();
-
-        showFailedDialogIfErrors();
     }
     
     public void refreshBookmarkBtn() {
@@ -547,8 +545,6 @@ public class XkcdViewerActivity extends Activity {
         } else {
             Toast.makeText(this, "No image loaded.", Toast.LENGTH_SHORT).show(); 
         }
-        
-        showFailedDialogIfErrors();
     }
 
     public Thread imageAttachment(final URL imageURL, final ImageAttachmentReceiver r) {
@@ -596,26 +592,18 @@ public class XkcdViewerActivity extends Activity {
     // Call showFailedDialogIfErrors() after all calls to this method
     // inside any method that calls this method.
     public void failed(final String reason) {
-        if(failedDialog != null){
-            if(!failedDialog.isShowing())
-                errorStack.clear();
-        }
-        errorStack.add(reason);
+        runOnUiThread(new Runnable() {
+            public void run() {
+                if(failedDialog != null && !failedDialog.isShowing()) {
+                    if (!failedDialog.isShowing())
+                        errorStack.clear();
+                }
+                errorStack.add(reason);
+                showDialog(DIALOG_FAILED);
+            }
+        });
     }
     
-    // This method should be called after the last call to failed() in all methods
-    // that call failed().
-    private void showFailedDialogIfErrors() {
-        if(errorStack.size() != 0)
-        {
-            if(failedDialog != null){
-                if(failedDialog.isShowing())
-                    failedDialog.dismiss();
-            }
-            showDialog(DIALOG_FAILED);
-        }
-    }
-
     public int getComicNumber() {
         try {
             return Integer.parseInt(comicInfo.number);
@@ -674,14 +662,6 @@ public class XkcdViewerActivity extends Activity {
                     handler.post(new Runnable() {
                         public void run() {
                             pd.dismiss();
-                        }
-                    });
-                    //Because we have to run UI events on the UI thread...
-                    runOnUiThread(new Runnable() {
-                        
-                        @Override
-                        public void run() {
-                            showFailedDialogIfErrors();
                         }
                     });
                 }
