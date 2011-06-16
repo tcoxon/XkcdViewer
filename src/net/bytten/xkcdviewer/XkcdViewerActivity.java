@@ -843,6 +843,8 @@ public class XkcdViewerActivity extends Activity {
             adb.setTitle("Error");
             adb.setIcon(android.R.drawable.alert_dark_frame);
             
+            adb.setNeutralButton(android.R.string.ok, null);
+            
             //Set failedDialog to our dialog so we can dismiss
             //it manually
             failedDialog = adb.create();
