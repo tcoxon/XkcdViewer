@@ -852,13 +852,13 @@ public class XkcdViewerActivity extends Activity {
             // Probably doesn't need its own builder, but because this is a special case
             // dialog I gave it one.
             AlertDialog.Builder adb = new AlertDialog.Builder(this);
-            adb.setTitle("Errors");
+            adb.setTitle("Error");
             adb.setIcon(android.R.drawable.alert_dark_frame);
             
             String errList = "";
             for(int i = 0; i < errorStack.size();i++)
             {
-                errList += errorStack.get(i) + "\r\n";
+                errList += errorStack.get(i) + "\n";
             }
             adb.setMessage(errList);
             
@@ -891,7 +891,7 @@ public class XkcdViewerActivity extends Activity {
             String errList = "";
             for(int i = 0; i < errorStack.size();i++)
             {
-                errList += errorStack.get(i) + "\r\n";
+                errList += errorStack.get(i) + "\n";
             }
             adf.setMessage(errList);
             //Set failedDialog to our dialog so we can dismiss
