@@ -806,10 +806,18 @@ public class XkcdViewerActivity extends Activity {
         case DIALOG_SEARCH_BY_TITLE:
             //Build and show the Search By Title dialog
             builder = new AlertDialog.Builder(this);
-            final EditText input = new EditText(this);
+            
+            LayoutInflater inflater = (LayoutInflater)getSystemService(
+                    LAYOUT_INFLATER_SERVICE);
+            View layout = inflater.inflate(R.layout.search_dlg,
+                    (ViewGroup)findViewById(R.id.search_dlg));
+            
+            final EditText input = (EditText)layout.findViewById(
+                    R.id.search_dlg_edit_box);
+
             builder.setTitle("Search by Title");
             builder.setIcon(android.R.drawable.ic_menu_search);
-            builder.setView(input);
+            builder.setView(layout);
             builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int which) {
                     String query = input.getText().toString();
@@ -878,6 +886,12 @@ public class XkcdViewerActivity extends Activity {
             //Set failedDialog to our dialog so we can dismiss
             //it manually
             failedDialog = adf;
+            break;
+        case DIALOG_SEARCH_BY_TITLE:
+            // Clear the text box
+            AlertDialog ads = (AlertDialog)dialog;
+            ((EditText)ads.findViewById(R.id.search_dlg_edit_box))
+                .setText("");
             break;
         default:
             break;
