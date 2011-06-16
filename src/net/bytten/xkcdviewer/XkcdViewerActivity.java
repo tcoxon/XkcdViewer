@@ -841,7 +841,7 @@ public class XkcdViewerActivity extends Activity {
             // dialog I gave it one.
             AlertDialog.Builder adb = new AlertDialog.Builder(this);
             adb.setTitle("Error");
-            adb.setIcon(android.R.drawable.alert_dark_frame);
+            adb.setIcon(android.R.drawable.ic_dialog_alert);
             
             adb.setNeutralButton(android.R.string.ok, null);
             
