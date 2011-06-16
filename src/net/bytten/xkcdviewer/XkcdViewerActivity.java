@@ -30,11 +30,13 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnCancelListener;
@@ -121,10 +123,20 @@ public class XkcdViewerActivity extends Activity {
     
     private ImageView bookmarkBtn = null;
 
+    // Prep the errors and the failedDialog so we can get a reference to it later.
+    private String errors = "";
+    private AlertDialog failedDialog;
+    
+    // Constants defining dialogs
+    static final int DIALOG_SHOW_HOVER_TEXT=0;
+    static final int DIALOG_SHOW_ABOUT=1;
+    static final int DIALOG_SEARCH_BY_TITLE=2;
+    static final int DIALOG_FAILED=3;
+    
     protected void resetContent() {
         //Only hide the title bar if we're running an android less than Android 3.0
-    	if(VersionHacks.getSdkInt() < 11)
-        	requestWindowFeature(Window.FEATURE_NO_TITLE);
+        if(VersionHacks.getSdkInt() < 11)
+            requestWindowFeature(Window.FEATURE_NO_TITLE);
 
         setContentView(R.layout.main);
         webview = (HackedWebView)findViewById(R.id.viewer);
@@ -137,7 +149,8 @@ public class XkcdViewerActivity extends Activity {
         webview.setClickable(true);
         webview.setOnClickListener(new OnClickListener() {
             public void onClick(View v) {
-                showHoverText();
+                //showHoverText();
+                showDialog(DIALOG_SHOW_HOVER_TEXT);
             }
         });
 
@@ -239,7 +252,7 @@ public class XkcdViewerActivity extends Activity {
     public void resetZoomControlEnable() {
         final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         final boolean allowPinchZoom = prefs.getBoolean("useZoomControls",!VersionHacks.isIncredible()),
-        			  showZoomButtons = prefs.getBoolean("showZoomButtons", true);
+                      showZoomButtons = prefs.getBoolean("showZoomButtons", true);
         setZoomControlEnable(allowPinchZoom, showZoomButtons);
     }
     
@@ -267,12 +280,12 @@ public class XkcdViewerActivity extends Activity {
         webview.setAllowZoomButtons(false);
         webview.setAllowPinchZoom(allowPinchZoom);
         if (showZoomButtons) {
-	        if (allowPinchZoom) {
-	        	webview.setAllowZoomButtons(true);
-	        } else {
-	            zoomParent.addView(zoom, ZOOM_PARAMS);
-	            zoom.setVisibility(View.GONE);
-	        }
+            if (allowPinchZoom) {
+                webview.setAllowZoomButtons(true);
+            } else {
+                zoomParent.addView(zoom, ZOOM_PARAMS);
+                zoom.setVisibility(View.GONE);
+            }
         }
     }
     
@@ -349,8 +362,8 @@ public class XkcdViewerActivity extends Activity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         
-    	MenuInflater inflater = getMenuInflater();
-    	inflater.inflate(R.menu.mainmenu, menu);
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.mainmenu, menu);
         return true;
     }
 
@@ -358,7 +371,8 @@ public class XkcdViewerActivity extends Activity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
         case R.id.MENU_HOVER_TEXT:
-            showHoverText();
+            //showHoverText();
+            showDialog(DIALOG_SHOW_HOVER_TEXT);
             return true;
         case R.id.MENU_REFRESH:
             loadComicNumber(comicInfo.number);
@@ -394,58 +408,21 @@ public class XkcdViewerActivity extends Activity {
             donate();
             return true;
         case R.id.MENU_ABOUT:
-            showAbout();
+            //showAbout();
+            showDialog(DIALOG_SHOW_ABOUT);
             return true;
         case R.id.MENU_BOOKMARKS:
             showBookmarks();
             return true;
         case R.id.MENU_SEARCH_TITLE:
-            searchByTitle();
+            //searchByTitle();
+            showDialog(DIALOG_SEARCH_BY_TITLE);
             return true;
         }
         return false;
     }
     
-    public void searchByTitle() {
-        AlertDialog.Builder alert = new AlertDialog.Builder(this);
-        final EditText input = new EditText(this);
-        alert.setTitle("Search by Title");
-        alert.setIcon(android.R.drawable.ic_menu_search);
-        alert.setView(input);
-        alert.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int which) {
-                String query = input.getText().toString();
-                Uri uri = Uri.parse("http://xkcd.com/archive/?q="+Uri.encode(query));
-                Intent i = new Intent(XkcdViewerActivity.this, ArchiveActivity.class);
-                i.setAction(Intent.ACTION_VIEW);
-                i.setData(uri);
-                startActivity(i);
-            }
-        });
-        alert.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.cancel();
-            }
-        });
-        alert.show();
-    }
-    
-    public void showAbout() {
-        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle(R.string.app_name);
-        builder.setIcon(android.R.drawable.ic_menu_info_details);
-        builder.setNegativeButton(android.R.string.ok, null);
-        builder.setNeutralButton("Donate", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int which) {
-                donate();
-            }
-        });
-        final View v = LayoutInflater.from(this).inflate(R.layout.about, null);
-        final TextView tv = (TextView)v.findViewById(R.id.aboutText);
-        tv.setText(getString(R.string.aboutText, getVersion()));
-        builder.setView(v);
-        builder.create().show();
-    }
+
     
     public String getVersion() {
         try {
@@ -575,29 +552,23 @@ public class XkcdViewerActivity extends Activity {
         return "http://xkcd.com/"+comicInfo.number+"/";
     }
 
-    public void showHoverText() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(XkcdViewerActivity.this);
-        builder.setMessage(comicInfo.altText);
-        builder.setNeutralButton("Close", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.dismiss();
-            }
-        });
-        AlertDialog alert = builder.create();
-        alert.show();
-    }
-
+    // This method allows for an error to be added to the error stack.
+    // Call showFailedDialogIfErrors() after all calls to this method
+    // inside any method that calls this method.
     public void failed(final String reason) {
-        handler.post(new Runnable() {
+        runOnUiThread(new Runnable() {
             public void run() {
-                AlertDialog.Builder builder = new AlertDialog.Builder(XkcdViewerActivity.this);
-                builder.setMessage("Comic loading failed: "+reason);
-                AlertDialog alert = builder.create();
-                alert.show();
+                if(failedDialog != null && !failedDialog.isShowing()) {
+                    if (!failedDialog.isShowing())
+                        errors = "";
+                }
+                if (!errors.equals("")) errors += "\n\n";
+                errors += reason;
+                showDialog(DIALOG_FAILED);
             }
         });
     }
-
+    
     public int getComicNumber() {
         try {
             return Integer.parseInt(comicInfo.number);
@@ -754,5 +725,133 @@ public class XkcdViewerActivity extends Activity {
 
     public String htmlEntityConvert(String text) {
         return Html.fromHtml(text).toString();
+    }
+    
+    @Override
+    protected Dialog onCreateDialog(int id) {
+        // Set up variables for a dialog and a dialog builder. Only need one of each.
+        Dialog dialog = null;
+        AlertDialog.Builder builder = null;
+        
+        // Determine the type of dialog based on the integer passed. These are defined in constants
+        // at the top of the class.
+        switch(id){
+        case DIALOG_SHOW_HOVER_TEXT:
+            //Build and show the Hover Text dialog
+            builder = new AlertDialog.Builder(XkcdViewerActivity.this);
+            builder.setMessage(comicInfo.altText);
+            builder.setNeutralButton("Close", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.dismiss();
+                }
+            });
+            dialog = builder.create();
+            builder = null;
+            break;
+        case DIALOG_SHOW_ABOUT:
+            //Build and show the About dialog
+            builder = new AlertDialog.Builder(this);
+            builder.setTitle(R.string.app_name);
+            builder.setIcon(android.R.drawable.ic_menu_info_details);
+            builder.setNegativeButton(android.R.string.ok, null);
+            builder.setNeutralButton("Donate", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int which) {
+                    donate();
+                }
+            });
+            View v = LayoutInflater.from(this).inflate(R.layout.about, null);
+            TextView tv = (TextView)v.findViewById(R.id.aboutText);
+            tv.setText(getString(R.string.aboutText, getVersion()));
+            builder.setView(v);
+            dialog = builder.create();
+            builder = null;
+            v = null;
+            tv = null;
+            break;
+        case DIALOG_SEARCH_BY_TITLE:
+            //Build and show the Search By Title dialog
+            builder = new AlertDialog.Builder(this);
+            
+            LayoutInflater inflater = (LayoutInflater)getSystemService(
+                    LAYOUT_INFLATER_SERVICE);
+            View layout = inflater.inflate(R.layout.search_dlg,
+                    (ViewGroup)findViewById(R.id.search_dlg));
+            
+            final EditText input = (EditText)layout.findViewById(
+                    R.id.search_dlg_edit_box);
+
+            builder.setTitle("Search by Title");
+            builder.setIcon(android.R.drawable.ic_menu_search);
+            builder.setView(layout);
+            builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int which) {
+                    String query = input.getText().toString();
+                    Uri uri = Uri.parse("http://xkcd.com/archive/?q="+Uri.encode(query));
+                    Intent i = new Intent(XkcdViewerActivity.this, ArchiveActivity.class);
+                    i.setAction(Intent.ACTION_VIEW);
+                    i.setData(uri);
+                    startActivity(i);
+                }
+            });
+            builder.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.cancel();
+                }
+            });
+            dialog = builder.create();
+            builder = null;
+            break;
+        case DIALOG_FAILED:
+            // Probably doesn't need its own builder, but because this is a special case
+            // dialog I gave it one.
+            AlertDialog.Builder adb = new AlertDialog.Builder(this);
+            adb.setTitle("Error");
+            adb.setIcon(android.R.drawable.ic_dialog_alert);
+            
+            adb.setNeutralButton(android.R.string.ok, null);
+            
+            //Set failedDialog to our dialog so we can dismiss
+            //it manually
+            failedDialog = adb.create();
+            failedDialog.setMessage(errors);
+
+            dialog = failedDialog;
+            break;
+        default:
+            dialog = null;
+        }
+
+        return dialog;
+    }
+
+    @Override
+    protected void onPrepareDialog(int id, Dialog dialog) {
+        // Determine the type of dialog based on the integer passed. These are defined in constants
+        // at the top of the class.
+        switch(id){
+        case DIALOG_SHOW_HOVER_TEXT:
+            //Get an alertdialog so we can edit it.
+            AlertDialog adh = (AlertDialog) dialog;
+            adh.setMessage(comicInfo.altText);
+            break;
+        case DIALOG_FAILED:
+            //Get the alertdialog for the failedDialog
+            AlertDialog adf = (AlertDialog) dialog;
+            
+            adf.setMessage(errors);
+            //Set failedDialog to our dialog so we can dismiss
+            //it manually
+            failedDialog = adf;
+            break;
+        case DIALOG_SEARCH_BY_TITLE:
+            // Clear the text box
+            AlertDialog ads = (AlertDialog)dialog;
+            ((EditText)ads.findViewById(R.id.search_dlg_edit_box))
+                .setText("");
+            break;
+        default:
+            break;
+        }
+        super.onPrepareDialog(id, dialog);
     }
 }
