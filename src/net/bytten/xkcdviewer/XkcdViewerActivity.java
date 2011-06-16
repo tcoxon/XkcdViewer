@@ -123,8 +123,8 @@ public class XkcdViewerActivity extends Activity {
     
     private ImageView bookmarkBtn = null;
 
-    // Prep the errorStack and the failedDialog so we can get a reference to it later.
-    private ArrayList<String> errorStack = new ArrayList<String>();
+    // Prep the errors and the failedDialog so we can get a reference to it later.
+    private String errors = "";
     private AlertDialog failedDialog;
     
     // Constants defining dialogs
@@ -596,9 +596,10 @@ public class XkcdViewerActivity extends Activity {
             public void run() {
                 if(failedDialog != null && !failedDialog.isShowing()) {
                     if (!failedDialog.isShowing())
-                        errorStack.clear();
+                        errors = "";
                 }
-                errorStack.add(reason);
+                if (!errors.equals("")) errors += "\n\n";
+                errors += reason;
                 showDialog(DIALOG_FAILED);
             }
         });
@@ -848,7 +849,7 @@ public class XkcdViewerActivity extends Activity {
             //Set failedDialog to our dialog so we can dismiss
             //it manually
             failedDialog = adb.create();
-            updateFailedDialogText(failedDialog);
+            failedDialog.setMessage(errors);
 
             dialog = failedDialog;
             break;
@@ -857,17 +858,6 @@ public class XkcdViewerActivity extends Activity {
         }
 
         return dialog;
-    }
-
-    private void updateFailedDialogText(AlertDialog ad) {
-        String errList = "";
-        for(int i = 0; i < errorStack.size();i++)
-        {
-            errList += errorStack.get(i);
-            if (i < errorStack.size()-1)
-                errList += "\n\n";
-        }
-        ad.setMessage(errList);
     }
 
     @Override
@@ -884,7 +874,7 @@ public class XkcdViewerActivity extends Activity {
             //Get the alertdialog for the failedDialog
             AlertDialog adf = (AlertDialog) dialog;
             
-            updateFailedDialogText(adf);
+            adf.setMessage(errors);
             //Set failedDialog to our dialog so we can dismiss
             //it manually
             failedDialog = adf;
