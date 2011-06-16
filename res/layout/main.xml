@@ -6,44 +6,44 @@
     android:id="@+id/mainLayout"
     >
 
-	<TableLayout android:orientation="horizontal"
-		android:layout_width="fill_parent"
-		android:layout_height="wrap_content">
-		<TableRow android:gravity="center">
-		<ImageView android:id="@+id/bookmarkBtn"
-		    android:layout_width="wrap_content"
-		    android:layout_height="wrap_content" />
-		<Button android:text="&lt;&lt;" android:id="@+id/firstBtn"
-			android:layout_weight="1"
-			android:visibility="gone"
-			android:layout_width="wrap_content" android:layout_height="wrap_content" />
-		<Button android:text="&lt;" android:id="@+id/prevBtn"
-			android:layout_weight="1"
-			android:layout_width="wrap_content" android:layout_height="wrap_content" />
-		<EditText android:hint="Comic #" android:id="@+id/comicIdSel"
-			android:layout_weight="1"
-			android:singleLine="true"
-			android:imeOptions="actionGo"
-			android:layout_width="wrap_content" android:layout_height="wrap_content" />
-		<Button android:text="&gt;" android:id="@+id/nextBtn"
-			android:layout_weight="1"
-			android:layout_width="wrap_content" android:layout_height="wrap_content" />
-		<Button android:text="&gt;&gt;" android:id="@+id/lastBtn"
-			android:layout_weight="1"
-			android:layout_width="wrap_content" android:layout_height="wrap_content" />
-		
+    <TableLayout android:orientation="horizontal"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content">
+        <TableRow android:gravity="center">
+        <ImageView android:id="@+id/bookmarkBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+        <Button android:text="&lt;&lt;" android:id="@+id/firstBtn"
+            android:layout_weight="1"
+            android:visibility="gone"
+            android:layout_width="wrap_content" android:layout_height="wrap_content" />
+        <Button android:text="&lt;" android:id="@+id/prevBtn"
+            android:layout_weight="1"
+            android:layout_width="wrap_content" android:layout_height="wrap_content" />
+        <EditText android:hint="Comic #" android:id="@+id/comicIdSel"
+            android:layout_weight="1"
+            android:singleLine="true"
+            android:imeOptions="actionGo"
+            android:layout_width="wrap_content" android:layout_height="wrap_content" />
+        <Button android:text="&gt;" android:id="@+id/nextBtn"
+            android:layout_weight="1"
+            android:layout_width="wrap_content" android:layout_height="wrap_content" />
+        <Button android:text="&gt;&gt;" android:id="@+id/lastBtn"
+            android:layout_weight="1"
+            android:layout_width="wrap_content" android:layout_height="wrap_content" />
+        
         <ImageView
             android:id="@+id/randomBtn"
             android:src="@drawable/ic_menu_dice"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
     </TableRow>
-	</TableLayout>
+    </TableLayout>
 
-	<TextView android:id="@+id/title"
-		android:layout_width="fill_parent" android:layout_height="wrap_content" />
-	
-	<net.bytten.xkcdviewer.ClickableWebView android:id="@+id/viewer"
-			android:layout_width="fill_parent" android:layout_height="fill_parent" />
-	
+    <TextView android:id="@+id/title"
+        android:layout_width="fill_parent" android:layout_height="wrap_content" />
+    
+    <net.bytten.xkcdviewer.ClickableWebView android:id="@+id/viewer"
+            android:layout_width="fill_parent" android:layout_height="fill_parent" />
+    
 </TableLayout>
