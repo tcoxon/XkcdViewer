@@ -855,16 +855,11 @@ public class XkcdViewerActivity extends Activity {
             adb.setTitle("Error");
             adb.setIcon(android.R.drawable.alert_dark_frame);
             
-            String errList = "";
-            for(int i = 0; i < errorStack.size();i++)
-            {
-                errList += errorStack.get(i) + "\n";
-            }
-            adb.setMessage(errList);
-            
             //Set failedDialog to our dialog so we can dismiss
             //it manually
             failedDialog = adb.create();
+            updateFailedDialogText(failedDialog);
+
             dialog = failedDialog;
             break;
         default:
@@ -872,6 +867,17 @@ public class XkcdViewerActivity extends Activity {
         }
 
         return dialog;
+    }
+
+    private void updateFailedDialogText(AlertDialog ad) {
+        String errList = "";
+        for(int i = 0; i < errorStack.size();i++)
+        {
+            errList += errorStack.get(i);
+            if (i < errorStack.size()-1)
+                errList += "\n\n";
+        }
+        ad.setMessage(errList);
     }
 
     @Override
@@ -888,12 +894,7 @@ public class XkcdViewerActivity extends Activity {
             //Get the alertdialog for the failedDialog
             AlertDialog adf = (AlertDialog) dialog;
             
-            String errList = "";
-            for(int i = 0; i < errorStack.size();i++)
-            {
-                errList += errorStack.get(i) + "\n";
-            }
-            adf.setMessage(errList);
+            updateFailedDialogText(adf);
             //Set failedDialog to our dialog so we can dismiss
             //it manually
             failedDialog = adf;
