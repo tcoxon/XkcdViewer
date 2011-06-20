@@ -23,9 +23,7 @@ package net.bytten.xkcdviewer;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -49,7 +47,6 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.text.InputType;
 import android.view.Gravity;
@@ -114,8 +111,6 @@ public class XkcdViewerActivity extends Activity {
     private EditText comicIdSel;
     
     private View zoom = null;
-    
-    private Handler handler = new Handler();
     
     private ImageView bookmarkBtn = null;
 
@@ -456,102 +451,49 @@ public class XkcdViewerActivity extends Activity {
         return "http://xkcd.com/"+Integer.toString(currentComicNumber())+"/";
     }
 
-    public static interface ImageAttachmentReceiver {
-        public void receive(File file);
-        public void error(Exception ex);
-        public void finish();
-        public void cancel();
-    }
-
     public void shareComicImage() {
-        if (comicInfo != null && comicInfo.img != null) {
-            final Thread[] saveThread = new Thread[1];
-
-            final ProgressDialog pd = ProgressDialog.show(this,
-                    "xkcdViewer", "Saving Image...", true, true,
-                    new OnCancelListener() {
-                public void onCancel(DialogInterface dialog) {
-                    if (saveThread[0] != null) {
-                        // tell loading to stop
-                        saveThread[0].interrupt();
-                    }
-                }
-            });
-
-            saveThread[0] = imageAttachment(comicInfo.img,
-                    new ImageAttachmentReceiver() {
-                public void finish() {
-                    handler.post(new Runnable() {
-                        public void run() {
-                            pd.dismiss();
-                        }
-                    });
-                }
-                public void receive(final File file) {
-                    handler.post(new Runnable() {
-                        public void run() {
-                            Uri uri = Uri.fromFile(file);
-                            Intent intent = new Intent(Intent.ACTION_SEND, null);
-                            intent.setType("image/png");
-                            intent.putExtra(Intent.EXTRA_STREAM, uri);
-                            startActivity(Intent.createChooser(intent, "Share Image..."));
-                        }
-                    });
-                }
-                public void error(final Exception ex) {
-                    failed("Couldn't save attachment: "+ex);
-                }
-                public void cancel() {
-                    handler.post(new Runnable() {
-                        public void run() {
-                            toast("Canceled image sharing.");
-                        }
-                    });
-                }
-            });
-
-        } else {
-            toast("No image loaded."); 
+        if (comicInfo == null || comicInfo.img == null) {
+            toast("No image loaded.");
+            return;
         }
-    }
-    
-    public Thread imageAttachment(final Uri img, final ImageAttachmentReceiver r) {
-        Thread t = new Thread() {
-            public void run() {
-                FileOutputStream fos = null;
-                InputStream is = null;
+        
+        new Utility.CancellableAsyncTaskWithProgressDialog<Uri, File>() {
+            Throwable e;
+            
+            protected File doInBackground(Uri... params) {
                 try {
+                    
                     File file = File.createTempFile("xkcd-attachment-", ".png");
-                    fos = new FileOutputStream(file);
-                    is = new URL(img.toString()).openStream();
-
-                    byte[] buffer = new byte[512];
-                    int count = -1;
-                    while ((count = is.read(buffer)) != -1) {
-                        fos.write(buffer, 0, count);
-                        Utility.allowInterrupt();
-                    }
-
-                    r.finish();
-                    r.receive(file);
+                    Utility.blockingSaveFile(file, params[0]);
+                    return file;
+                    
                 } catch (InterruptedException ex) {
-                    r.finish();
-                    r.cancel();
-                } catch (IOException ex) {
-                    r.finish();
-                    r.error(ex);
-                } finally {
-                    try {
-                        if (fos != null) fos.close();
-                        if (is != null) is.close();
-                    } catch (IOException ex) {}
+                    return null;
+                } catch (Throwable ex) {
+                    e = ex;
+                    return null;
                 }
             }
-        };
-        t.start();
-        return t;
+            
+            protected void onPostExecute(File result) {
+                super.onPostExecute(result);
+                if (result != null) {
+                    
+                    Uri uri = Uri.fromFile(result);
+                    Intent intent = new Intent(Intent.ACTION_SEND, null);
+                    intent.setType("image/png");
+                    intent.putExtra(Intent.EXTRA_STREAM, uri);
+                    startActivity(Intent.createChooser(intent, "Share image..."));
+                    
+                } else if (e != null) {
+                    e.printStackTrace();
+                    failed("Couldn't save attachment: "+e);
+                }
+            }
+            
+        }.start(this, "Saving image...", new Uri[]{comicInfo.img});
     }
-
+    
     public void failed(final String reason) {
         runOnUiThread(new Runnable() {
             public void run() {
