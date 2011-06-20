@@ -192,7 +192,7 @@ public class XkcdViewerActivity extends Activity {
             }
         });
 
-        ((Button)findViewById(R.id.lastBtn)).setOnClickListener(new View.OnClickListener() {
+        ((Button)findViewById(R.id.finalBtn)).setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 goToFinal();
             }
@@ -384,7 +384,7 @@ public class XkcdViewerActivity extends Activity {
         case R.id.MENU_SETTINGS:
             showSettings();
             return true;
-        case R.id.MENU_GO_TO_LAST:
+        case R.id.MENU_GO_TO_FINAL:
             goToFinal();
             return true;
         case R.id.MENU_GO_TO_NEXT:
@@ -761,8 +761,8 @@ public class XkcdViewerActivity extends Activity {
                     } catch (MalformedURLException e) {
                         failed("Malformed URL: "+e);
                     } catch (FileNotFoundException e) {
-                        // Comic doesn't exist. Probably went beyond the last or
-                        // before the first.
+                        // Comic doesn't exist. Probably went beyond the final
+                        // or before the first.
                         toast("Comic doesn't exist");
                     } catch (IOException e) {
                         failed("IO error: "+e);

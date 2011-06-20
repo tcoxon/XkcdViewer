@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources><string name="mainmenu_goto">Go To...</string>
-<string name="mainmenu_goto_last">Last</string>
+<string name="mainmenu_goto_final">Final</string>
 <string name="mainmenu_goto_next">Next</string>
 <string name="mainmenu_goto_first">First</string>
 <string name="mainmenu_goto_prev">Previous</string>

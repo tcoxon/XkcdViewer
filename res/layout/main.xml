@@ -28,7 +28,7 @@
         <Button android:text="&gt;" android:id="@+id/nextBtn"
             android:layout_weight="1"
             android:layout_width="wrap_content" android:layout_height="wrap_content" />
-        <Button android:text="&gt;&gt;" android:id="@+id/lastBtn"
+        <Button android:text="&gt;&gt;" android:id="@+id/finalBtn"
             android:layout_weight="1"
             android:layout_width="wrap_content" android:layout_height="wrap_content" />
         
