@@ -18,6 +18,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -110,7 +111,10 @@ public class ArchiveActivity extends ListActivity {
             comic.setData(Uri.parse("http://www.xkcd.com/"+item.comicNumber+"/"));
             comic.setClass(getContext(), XkcdViewerActivity.class);
             getContext().startActivity(comic);
+            
         }
+        
+        
     }
     
     static class ArchiveItem {

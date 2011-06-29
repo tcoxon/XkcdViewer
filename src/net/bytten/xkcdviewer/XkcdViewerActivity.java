@@ -95,6 +95,7 @@ public class XkcdViewerActivity extends Activity {
                        "http://(www\\.)?xkcd\\.com/archive(/)?");
     
     public static final String DONATE_URL = "https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=C9JRVA3NTULSL&lc=US&item_name=XkcdViewer%20donation&item_number=xkcdviewer&currency_code=USD";
+    public static final String XKCD_ARCHIVE_STRING = "http://xkcd.com/archive/";
     
     public static final FrameLayout.LayoutParams ZOOM_PARAMS =
         new FrameLayout.LayoutParams(
@@ -114,6 +115,9 @@ public class XkcdViewerActivity extends Activity {
     
     private ImageView bookmarkBtn = null;
 
+    // Constants for showActivityForResult calls
+    static final int PICK_ARCHIVE_ITEM = 0;
+    
     // Prep the errors and the failedDialog so we can get a reference to it later.
     private String errors = "";
     private AlertDialog failedDialog;
@@ -323,7 +327,7 @@ public class XkcdViewerActivity extends Activity {
         }
     }
     
-    public void showArchive() {
+/*    public void showArchive() {
         Intent i = new Intent(this, ArchiveActivity.class);
         i.setData(Uri.parse("http://xkcd.com/archive/"));
         i.setAction(Intent.ACTION_VIEW);
@@ -335,6 +339,22 @@ public class XkcdViewerActivity extends Activity {
         i.setData(Uri.parse("http://xkcd.com/archive/?bookmarks"));
         i.setAction(Intent.ACTION_VIEW);
         startActivity(i);
+    }*/
+    
+    public void showArchive() {
+    	Intent i = new Intent(this, ArchiveActivityNew.class);
+    	i.setData(Uri.parse(XKCD_ARCHIVE_STRING));
+    	i.setAction(Intent.ACTION_VIEW);
+    	i.putExtra(getPackageName() + "LoadType", ArchiveActivityNew.LoadType.ARCHIVE);
+    	startActivityForResult(i, PICK_ARCHIVE_ITEM);
+    }
+    
+    public void showBookmarks() {
+    	Intent i = new Intent(this, ArchiveActivityNew.class);
+    	i.setData(Uri.parse(XKCD_ARCHIVE_STRING));
+    	i.setAction(Intent.ACTION_VIEW);
+    	i.putExtra(getPackageName() + "LoadType", ArchiveActivityNew.LoadType.BOOKMARKS);
+    	startActivityForResult(i, PICK_ARCHIVE_ITEM);
     }
     
     @Override
@@ -568,10 +588,12 @@ public class XkcdViewerActivity extends Activity {
                 public void onClick(DialogInterface dialog, int which) {
                     String query = input.getText().toString();
                     Uri uri = Uri.parse("http://xkcd.com/archive/?q="+Uri.encode(query));
-                    Intent i = new Intent(XkcdViewerActivity.this, ArchiveActivity.class);
+                    Intent i = new Intent(XkcdViewerActivity.this, ArchiveActivityNew.class);
                     i.setAction(Intent.ACTION_VIEW);
                     i.setData(uri);
-                    startActivity(i);
+                    i.putExtra(getPackageName() + "LoadType", ArchiveActivityNew.LoadType.SEARCH_TITLE);
+                    i.putExtra(getPackageName() + "query", query);
+                    startActivityForResult(i, PICK_ARCHIVE_ITEM);
                 }
             });
             builder.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
@@ -838,4 +860,16 @@ public class XkcdViewerActivity extends Activity {
         webview.loadUrl(uri.toString());
     }
     
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    	// TODO Auto-generated method stub
+    	//super.onActivityResult(requestCode, resultCode, data);
+    	
+    	if(requestCode == PICK_ARCHIVE_ITEM) {
+    		if(resultCode == RESULT_OK) {
+    			// This means an archive item was picked. Display it.
+    			loadComic(createComicUri(Integer.valueOf(data.getStringExtra(getPackageName() + "comicNumber"))));
+    		}
+    	}
+    }
 }
