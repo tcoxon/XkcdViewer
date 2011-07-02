@@ -327,33 +327,19 @@ public class XkcdViewerActivity extends Activity {
         }
     }
     
-/*    public void showArchive() {
-        Intent i = new Intent(this, ArchiveActivity.class);
-        i.setData(Uri.parse("http://xkcd.com/archive/"));
-        i.setAction(Intent.ACTION_VIEW);
-        startActivity(i);
-    }
-    
-    public void showBookmarks() {
-        Intent i = new Intent(this, ArchiveActivity.class);
-        i.setData(Uri.parse("http://xkcd.com/archive/?bookmarks"));
-        i.setAction(Intent.ACTION_VIEW);
-        startActivity(i);
-    }*/
-    
     public void showArchive() {
-        Intent i = new Intent(this, ArchiveActivityNew.class);
+        Intent i = new Intent(this, ArchiveActivity.class);
         i.setData(Uri.parse(XKCD_ARCHIVE_STRING));
         i.setAction(Intent.ACTION_VIEW);
-        i.putExtra(getPackageName() + "LoadType", ArchiveActivityNew.LoadType.ARCHIVE);
+        i.putExtra(getPackageName() + "LoadType", ArchiveActivity.LoadType.ARCHIVE);
         startActivityForResult(i, PICK_ARCHIVE_ITEM);
     }
     
     public void showBookmarks() {
-        Intent i = new Intent(this, ArchiveActivityNew.class);
+        Intent i = new Intent(this, ArchiveActivity.class);
         i.setData(Uri.parse(XKCD_ARCHIVE_STRING));
         i.setAction(Intent.ACTION_VIEW);
-        i.putExtra(getPackageName() + "LoadType", ArchiveActivityNew.LoadType.BOOKMARKS);
+        i.putExtra(getPackageName() + "LoadType", ArchiveActivity.LoadType.BOOKMARKS);
         startActivityForResult(i, PICK_ARCHIVE_ITEM);
     }
     
@@ -588,10 +574,10 @@ public class XkcdViewerActivity extends Activity {
                 public void onClick(DialogInterface dialog, int which) {
                     String query = input.getText().toString();
                     Uri uri = Uri.parse("http://xkcd.com/archive/?q="+Uri.encode(query));
-                    Intent i = new Intent(XkcdViewerActivity.this, ArchiveActivityNew.class);
+                    Intent i = new Intent(XkcdViewerActivity.this, ArchiveActivity.class);
                     i.setAction(Intent.ACTION_VIEW);
                     i.setData(uri);
-                    i.putExtra(getPackageName() + "LoadType", ArchiveActivityNew.LoadType.SEARCH_TITLE);
+                    i.putExtra(getPackageName() + "LoadType", ArchiveActivity.LoadType.SEARCH_TITLE);
                     i.putExtra(getPackageName() + "query", query);
                     startActivityForResult(i, PICK_ARCHIVE_ITEM);
                 }

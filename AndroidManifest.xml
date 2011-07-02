@@ -29,7 +29,7 @@
             </intent-filter>
         </activity>
         <activity android:label="@string/app_archive_label"
-                  android:configChanges="keyboardHidden|orientation" android:name=".ArchiveActivityNew">
+                  android:configChanges="keyboardHidden|orientation" android:name=".ArchiveActivity">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
             </intent-filter>

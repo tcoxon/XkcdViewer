@@ -26,7 +26,7 @@ import android.widget.ListView;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.TextView;
 
-public class ArchiveActivityNew extends ListActivity {
+public class ArchiveActivity extends ListActivity {
     static public enum LoadType { ARCHIVE, BOOKMARKS, SEARCH_TITLE };
     
     static Pattern archiveItemPattern = Pattern.compile(
@@ -173,7 +173,7 @@ public class ArchiveActivityNew extends ListActivity {
                     ArchiveItem item = new ArchiveItem();
                     item.comicNumber = m.group(1);
                     item.title = m.group(3);
-                    if (BookmarksHelper.isBookmarked(ArchiveActivityNew.this, item))
+                    if (BookmarksHelper.isBookmarked(ArchiveActivity.this, item))
                         item.bookmarked = true;
                     archiveItems.add(item);
                 }
@@ -224,7 +224,7 @@ public class ArchiveActivityNew extends ListActivity {
 
     /* Only call this from the UI thread */
     protected void failed(final String msg) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(ArchiveActivityNew.this);
+        AlertDialog.Builder builder = new AlertDialog.Builder(ArchiveActivity.this);
         builder.setMessage(msg);
         AlertDialog alert = builder.create();
         alert.show();

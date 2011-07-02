@@ -3,7 +3,7 @@ package net.bytten.xkcdviewer;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.bytten.xkcdviewer.ArchiveActivityNew.ArchiveItem;
+import net.bytten.xkcdviewer.ArchiveActivity.ArchiveItem;
 
 import android.content.Context;
 import android.database.Cursor;
