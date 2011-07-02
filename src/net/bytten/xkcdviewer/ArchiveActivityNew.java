@@ -27,129 +27,129 @@ import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.TextView;
 
 public class ArchiveActivityNew extends ListActivity {
-	static public enum LoadType { ARCHIVE, BOOKMARKS, SEARCH_TITLE };
-	
-	static Pattern archiveItemPattern = Pattern.compile(
+    static public enum LoadType { ARCHIVE, BOOKMARKS, SEARCH_TITLE };
+    
+    static Pattern archiveItemPattern = Pattern.compile(
             // group(1): comic number;   group(2): date;   group(3): title
             "\\s*<a href=\"/(\\d+)/\" title=\"(\\d+-\\d+-\\d+)\">([^<]+)</a><br/>\\s*");
-	
-	private List<ArchiveItem> archiveItems;
-	
-	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		
-		final Intent intent = getIntent();
-		final String query = intent.getStringExtra(getPackageName() + "query");
-		final LoadType loadtype = (LoadType) intent.getSerializableExtra(getPackageName() + "LoadType");
-		
-		
-		new Utility.CancellableAsyncTaskWithProgressDialog<Object,
+    
+    private List<ArchiveItem> archiveItems;
+    
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        
+        final Intent intent = getIntent();
+        final String query = intent.getStringExtra(getPackageName() + "query");
+        final LoadType loadtype = (LoadType) intent.getSerializableExtra(getPackageName() + "LoadType");
+        
+        
+        new Utility.CancellableAsyncTaskWithProgressDialog<Object,
         List<ArchiveItem> >()
-	    {
-	        protected Throwable failReason = null;
-	        
-	        protected List<ArchiveItem> doInBackground(Object... params) {
-	            try {
-	                return fetchContent(loadtype, query);
-	            } catch (Throwable e) {
-	                failReason = e;
-	                return null;
-	            }
-	        }
-	        
-	        protected void onPostExecute(List<ArchiveItem> result) {
-	            super.onPostExecute(result);
-	            if (result != null) {
-	                showResults(loadtype, result);
-	            } else {
-	                failReason.printStackTrace();
-	                /* Pattern match against type of failReason */
-	                try {
-	                    throw failReason;
-	                } catch (MalformedURLException e) {
-	                    failed("Malformed URL: "+e);
-	                } catch (IOException e) {
-	                    failed("IO error: "+e);
-	                } catch (InterruptedException e) {
-	                    // Do nothing. Loading was cancelled.
-	                } catch (Throwable e) {
-	                    failed(e.toString());
-	                }
-	            }
-	        }
-	        
-	    }.start(this, "Loading archive...", new Object[]{null});
+        {
+            protected Throwable failReason = null;
+            
+            protected List<ArchiveItem> doInBackground(Object... params) {
+                try {
+                    return fetchContent(loadtype, query);
+                } catch (Throwable e) {
+                    failReason = e;
+                    return null;
+                }
+            }
+            
+            protected void onPostExecute(List<ArchiveItem> result) {
+                super.onPostExecute(result);
+                if (result != null) {
+                    showResults(loadtype, result);
+                } else {
+                    failReason.printStackTrace();
+                    /* Pattern match against type of failReason */
+                    try {
+                        throw failReason;
+                    } catch (MalformedURLException e) {
+                        failed("Malformed URL: "+e);
+                    } catch (IOException e) {
+                        failed("IO error: "+e);
+                    } catch (InterruptedException e) {
+                        // Do nothing. Loading was cancelled.
+                    } catch (Throwable e) {
+                        failed(e.toString());
+                    }
+                }
+            }
+            
+        }.start(this, "Loading archive...", new Object[]{null});
 
-		super.onCreate(savedInstanceState);
-	}
-	
-	@Override
-	protected void onListItemClick(ListView l, View v, int position, long id) {
-		
-		Intent comic = new Intent();
-		comic.addCategory(Intent.CATEGORY_BROWSABLE);
-		comic.putExtra(getPackageName()+ "comicNumber", archiveItems.get(position).comicNumber);
-		
-		setResult(RESULT_OK, comic);
-		finish();
-	}
-	
+        super.onCreate(savedInstanceState);
+    }
+    
+    @Override
+    protected void onListItemClick(ListView l, View v, int position, long id) {
+        
+        Intent comic = new Intent();
+        comic.addCategory(Intent.CATEGORY_BROWSABLE);
+        comic.putExtra(getPackageName()+ "comicNumber", archiveItems.get(position).comicNumber);
+        
+        setResult(RESULT_OK, comic);
+        finish();
+    }
+    
     static class ArchiveItem {
         public boolean bookmarked = false;
         public String title, comicNumber;
         
         @Override
         public String toString() {
-        	return  comicNumber + " - " + title;
+            return  comicNumber + " - " + title;
         }
     }
     
     private class ArchiveAdapter extends ArrayAdapter<ArchiveItem> {
-    	
-    	public ArchiveAdapter(Context context, int textViewResourceId, List<ArchiveItem> results) {
-			super(context, textViewResourceId, results);
-		}
-    	
-    	@Override
-    	public View getView(int position, View convertView, ViewGroup parent) {
-    		View v = convertView;
-    		if(v == null) {
-    			LayoutInflater vi = (LayoutInflater)getSystemService(LAYOUT_INFLATER_SERVICE);
-    			v = vi.inflate(R.layout.archive_item_layout, null);
-    		}
-    		
-    		final ArchiveItem i = archiveItems.get(position);
-    		if(i != null) {
-    			CheckBox cb = (CheckBox) v.findViewById(R.id.archive_item_bookmarked);
-    			TextView tv = (TextView) v.findViewById(R.id.archive_item_textView);
-    			
-    			if(cb != null) {
-    				cb.setChecked(i.bookmarked);
-    				cb.setFocusable(false);
-    				cb.setFocusableInTouchMode(false);
-    				cb.setOnCheckedChangeListener(new OnCheckedChangeListener() {
-						@Override
-						public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-							if (!isChecked) {
-		                        BookmarksHelper.removeBookmark(getContext(), i.comicNumber);
-		                    } else {
-		                        BookmarksHelper.addBookmark(getContext(), i.comicNumber, i.title);
-		                    }
-		                    i.bookmarked = !i.bookmarked;							
-						}
-					});
-    			}
-    			if(tv != null) {
-    				tv.setText(i.toString());
-    			}
-    		}
-    		
-    		v.setEnabled(true);
-    		return v;
-    	}
+        
+        public ArchiveAdapter(Context context, int textViewResourceId, List<ArchiveItem> results) {
+            super(context, textViewResourceId, results);
+        }
+        
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            View v = convertView;
+            if(v == null) {
+                LayoutInflater vi = (LayoutInflater)getSystemService(LAYOUT_INFLATER_SERVICE);
+                v = vi.inflate(R.layout.archive_item_layout, null);
+            }
+            
+            final ArchiveItem i = archiveItems.get(position);
+            if(i != null) {
+                CheckBox cb = (CheckBox) v.findViewById(R.id.archive_item_bookmarked);
+                TextView tv = (TextView) v.findViewById(R.id.archive_item_textView);
+                
+                if(cb != null) {
+                    cb.setChecked(i.bookmarked);
+                    cb.setFocusable(false);
+                    cb.setFocusableInTouchMode(false);
+                    cb.setOnCheckedChangeListener(new OnCheckedChangeListener() {
+                        @Override
+                        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                            if (!isChecked) {
+                                BookmarksHelper.removeBookmark(getContext(), i.comicNumber);
+                            } else {
+                                BookmarksHelper.addBookmark(getContext(), i.comicNumber, i.title);
+                            }
+                            i.bookmarked = !i.bookmarked;                            
+                        }
+                    });
+                }
+                if(tv != null) {
+                    tv.setText(i.toString());
+                }
+            }
+            
+            v.setEnabled(true);
+            return v;
+        }
     }
-	
-	protected List<ArchiveItem> fetchContent(LoadType loadtype, String query) throws Throwable {
+    
+    protected List<ArchiveItem> fetchContent(LoadType loadtype, String query) throws Throwable {
         switch (loadtype) {
         case BOOKMARKS:
             return fetchBookmarks();
@@ -158,9 +158,9 @@ public class ArchiveActivityNew extends ListActivity {
         default:
             return fetchArchive();
         }
-	}
-	
-	protected List<ArchiveItem> fetchArchive() throws Throwable {
+    }
+    
+    protected List<ArchiveItem> fetchArchive() throws Throwable {
         archiveItems = new ArrayList<ArchiveItem>();
         URL url = new URL("http://www.xkcd.com/archive/");
         BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream()));
@@ -185,29 +185,29 @@ public class ArchiveActivityNew extends ListActivity {
         }
         return archiveItems;
     }
-	
-	protected List<ArchiveItem> fetchBookmarks() throws Throwable {
+    
+    protected List<ArchiveItem> fetchBookmarks() throws Throwable {
         archiveItems = BookmarksHelper.getBookmarks(this);
         return archiveItems;
     }
-	
-	protected List<ArchiveItem> fetchSearchByTitleResults(String titleQuery) throws Throwable {
-	    String[] titleWords = titleQuery.toLowerCase().split("\\s");
-	    archiveItems = fetchArchive();
-	    Utility.allowInterrupt();
-	    for (int i = 0; i < archiveItems.size(); i++) {
-	        String title = archiveItems.get(i).title.toLowerCase();
-	        for (String w: titleWords) {
-	            if (title.indexOf(w) == -1) {
-	                archiveItems.remove(i);
-	                i--;
-	                break;
-	            }
-	        }
-	    }
-	    return archiveItems;
-	}
-	
+    
+    protected List<ArchiveItem> fetchSearchByTitleResults(String titleQuery) throws Throwable {
+        String[] titleWords = titleQuery.toLowerCase().split("\\s");
+        archiveItems = fetchArchive();
+        Utility.allowInterrupt();
+        for (int i = 0; i < archiveItems.size(); i++) {
+            String title = archiveItems.get(i).title.toLowerCase();
+            for (String w: titleWords) {
+                if (title.indexOf(w) == -1) {
+                    archiveItems.remove(i);
+                    i--;
+                    break;
+                }
+            }
+        }
+        return archiveItems;
+    }
+    
     protected void showResults(LoadType loadType, List<ArchiveItem> results) {
         switch (loadType) {
         case BOOKMARKS:

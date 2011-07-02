@@ -342,19 +342,19 @@ public class XkcdViewerActivity extends Activity {
     }*/
     
     public void showArchive() {
-    	Intent i = new Intent(this, ArchiveActivityNew.class);
-    	i.setData(Uri.parse(XKCD_ARCHIVE_STRING));
-    	i.setAction(Intent.ACTION_VIEW);
-    	i.putExtra(getPackageName() + "LoadType", ArchiveActivityNew.LoadType.ARCHIVE);
-    	startActivityForResult(i, PICK_ARCHIVE_ITEM);
+        Intent i = new Intent(this, ArchiveActivityNew.class);
+        i.setData(Uri.parse(XKCD_ARCHIVE_STRING));
+        i.setAction(Intent.ACTION_VIEW);
+        i.putExtra(getPackageName() + "LoadType", ArchiveActivityNew.LoadType.ARCHIVE);
+        startActivityForResult(i, PICK_ARCHIVE_ITEM);
     }
     
     public void showBookmarks() {
-    	Intent i = new Intent(this, ArchiveActivityNew.class);
-    	i.setData(Uri.parse(XKCD_ARCHIVE_STRING));
-    	i.setAction(Intent.ACTION_VIEW);
-    	i.putExtra(getPackageName() + "LoadType", ArchiveActivityNew.LoadType.BOOKMARKS);
-    	startActivityForResult(i, PICK_ARCHIVE_ITEM);
+        Intent i = new Intent(this, ArchiveActivityNew.class);
+        i.setData(Uri.parse(XKCD_ARCHIVE_STRING));
+        i.setAction(Intent.ACTION_VIEW);
+        i.putExtra(getPackageName() + "LoadType", ArchiveActivityNew.LoadType.BOOKMARKS);
+        startActivityForResult(i, PICK_ARCHIVE_ITEM);
     }
     
     @Override
@@ -862,14 +862,14 @@ public class XkcdViewerActivity extends Activity {
     
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-    	// TODO Auto-generated method stub
-    	//super.onActivityResult(requestCode, resultCode, data);
-    	
-    	if(requestCode == PICK_ARCHIVE_ITEM) {
-    		if(resultCode == RESULT_OK) {
-    			// This means an archive item was picked. Display it.
-    			loadComic(createComicUri(Integer.valueOf(data.getStringExtra(getPackageName() + "comicNumber"))));
-    		}
-    	}
+        // TODO Auto-generated method stub
+        //super.onActivityResult(requestCode, resultCode, data);
+        
+        if(requestCode == PICK_ARCHIVE_ITEM) {
+            if(resultCode == RESULT_OK) {
+                // This means an archive item was picked. Display it.
+                loadComic(createComicUri(Integer.valueOf(data.getStringExtra(getPackageName() + "comicNumber"))));
+            }
+        }
     }
 }
