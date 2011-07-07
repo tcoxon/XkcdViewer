@@ -71,6 +71,7 @@ import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 import android.widget.Toast;
 import android.content.Context;
+import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 
 public class XkcdViewerActivity extends Activity {
@@ -156,15 +157,23 @@ public class XkcdViewerActivity extends Activity {
         comicIdSel.setOnEditorActionListener(new OnEditorActionListener() {
             public boolean onEditorAction(TextView v, int actionId,
                     KeyEvent event) {
-                try {
-                    loadComic(createComicUri(Integer.parseInt(
-                            comicIdSel.getText().toString())));
-                } catch (NumberFormatException e) {
-                    toast("Enter a number");
+                String text = comicIdSel.getText().toString();
+                if (!text.equals("") &&
+                    (actionId == EditorInfo.IME_ACTION_GO ||
+                     (actionId == EditorInfo.IME_NULL &&
+                        event.getKeyCode() == KeyEvent.KEYCODE_ENTER)))
+                {
+                    try {
+                        loadComic(createComicUri(Integer.parseInt(text)));
+                        comicIdSel.setText("");
+                    } catch (NumberFormatException e) {
+                        toast("Enter a number");
+                    }
+                    return true;
                 }
                 return false;
             }
-        }); 
+        });
         comicIdSel.setOnFocusChangeListener(new OnFocusChangeListener() {
             public void onFocusChange(View v, boolean hasFocus) {
                 InputMethodManager imm = (InputMethodManager)getSystemService(
