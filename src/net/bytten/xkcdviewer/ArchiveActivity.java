@@ -36,6 +36,7 @@ public class ArchiveActivity extends ListActivity {
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
         
         final Intent intent = getIntent();
         final String query = intent.getStringExtra(getPackageName() + "query");
@@ -79,7 +80,7 @@ public class ArchiveActivity extends ListActivity {
             
         }.start(this, "Loading archive...", new Object[]{null});
 
-        super.onCreate(savedInstanceState);
+        getListView().setFastScrollEnabled(true);
     }
     
     @Override
