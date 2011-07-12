@@ -1,14 +1,9 @@
 package net.bytten.xkcdviewer;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import android.app.AlertDialog;
 import android.app.ListActivity;
@@ -16,33 +11,40 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.ListView;
+import android.widget.Toast;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.TextView;
+
+import net.bytten.xkcdviewer.ArchiveData.ArchiveItem;
 
 public class ArchiveActivity extends ListActivity {
     static public enum LoadType { ARCHIVE, BOOKMARKS, SEARCH_TITLE };
     
-    static Pattern archiveItemPattern = Pattern.compile(
-            // group(1): comic number;   group(2): date;   group(3): title
-            "\\s*<a href=\"/(\\d+)/\" title=\"(\\d+-\\d+-\\d+)\">([^<]+)</a><br/>\\s*");
-    
     private List<ArchiveItem> archiveItems;
+    protected String query = null;
+    protected LoadType loadtype = LoadType.ARCHIVE;
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         
         final Intent intent = getIntent();
-        final String query = intent.getStringExtra(getPackageName() + "query");
-        final LoadType loadtype = (LoadType) intent.getSerializableExtra(getPackageName() + "LoadType");
+        query = intent.getStringExtra(getPackageName() + "query");
+        loadtype = (LoadType) intent.getSerializableExtra(getPackageName() + "LoadType");
         
-        
+        resetContent();
+    }
+    
+    protected void resetContent() {
         new Utility.CancellableAsyncTaskWithProgressDialog<Object,
         List<ArchiveItem> >()
         {
@@ -84,6 +86,53 @@ public class ArchiveActivity extends ListActivity {
     }
     
     @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.archive, menu);
+        return true;
+    }
+    
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+        case R.id.archive_refresh:
+            refresh();
+            return true;
+        default:
+            return super.onOptionsItemSelected(item);
+        }
+    }
+    
+    public void refresh() {
+        new Utility.CancellableAsyncTaskWithProgressDialog<Object,
+            Boolean>()
+        {
+            @Override
+            protected Boolean doInBackground(Object... params) {
+                try {
+                    ArchiveData.refresh(ArchiveActivity.this);
+                    return true;
+                } catch (Throwable e) {
+                    return false;
+                }
+            }
+            
+            @Override
+            protected void onPostExecute(Boolean result) {
+                super.onPostExecute(result);
+                if (!result) {
+                    Toast.makeText(ArchiveActivity.this,
+                        "Failed to refresh archive cache",
+                        Toast.LENGTH_SHORT).show();
+                } else {
+                    resetContent();
+                }
+            }
+            
+        }.start(this, "Loading archive...", new Object[]{null});
+    }
+    
+    @Override
     protected void onListItemClick(ListView l, View v, int position, long id) {
         
         Intent comic = new Intent();
@@ -92,16 +141,6 @@ public class ArchiveActivity extends ListActivity {
         
         setResult(RESULT_OK, comic);
         finish();
-    }
-    
-    static class ArchiveItem {
-        public boolean bookmarked = false;
-        public String title, comicNumber;
-        
-        @Override
-        public String toString() {
-            return  comicNumber + " - " + title;
-        }
     }
     
     private class ArchiveAdapter extends ArrayAdapter<ArchiveItem> {
@@ -161,28 +200,7 @@ public class ArchiveActivity extends ListActivity {
     }
     
     protected List<ArchiveItem> fetchArchive() throws Throwable {
-        archiveItems = new ArrayList<ArchiveItem>();
-        URL url = new URL("http://www.xkcd.com/archive/");
-        BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream()));
-        
-        try {
-            String line;
-            while ((line = br.readLine()) != null) {
-                Matcher m = archiveItemPattern.matcher(line);
-                while (m.find()) {
-                    ArchiveItem item = new ArchiveItem();
-                    item.comicNumber = m.group(1);
-                    item.title = m.group(3);
-                    if (BookmarksHelper.isBookmarked(ArchiveActivity.this, item))
-                        item.bookmarked = true;
-                    archiveItems.add(item);
-                }
-
-                Utility.allowInterrupt();
-            }
-        } finally {
-            br.close();
-        }
+        archiveItems = ArchiveData.getData(this);
         return archiveItems;
     }
     
@@ -193,17 +211,20 @@ public class ArchiveActivity extends ListActivity {
     
     protected List<ArchiveItem> fetchSearchByTitleResults(String titleQuery) throws Throwable {
         String[] titleWords = titleQuery.toLowerCase().split("\\s");
-        archiveItems = fetchArchive();
+        List<ArchiveItem> rawItems = fetchArchive();
+        archiveItems = new ArrayList<ArchiveItem>();
         Utility.allowInterrupt();
-        for (int i = 0; i < archiveItems.size(); i++) {
-            String title = archiveItems.get(i).title.toLowerCase();
+        for (int i = 0; i < rawItems.size(); i++) {
+            String title = rawItems.get(i).title.toLowerCase();
+            boolean titleMatches = true;
             for (String w: titleWords) {
                 if (title.indexOf(w) == -1) {
-                    archiveItems.remove(i);
-                    i--;
+                    titleMatches = false;
                     break;
                 }
             }
+            if (titleMatches)
+                archiveItems.add(rawItems.get(i));
         }
         return archiveItems;
     }
