@@ -768,6 +768,7 @@ public class XkcdViewerActivity extends Activity {
                     title.setText(numStr + " - " + comicInfo.title);
                     comicIdSel.setText(numStr);
                     refreshBookmarkBtn();
+                    setLastReadComic(comicInfo.num);
                     
                     loadComicImage(comicInfo.img);
                 } else {
