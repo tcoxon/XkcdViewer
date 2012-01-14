@@ -6,7 +6,7 @@
 <string name="mainmenu_goto_prev">Previous</string>
 <string name="mainmenu_archive">Archive</string>
 <string name="mainmenu_goto_random">Random</string>
-<string name="mainmenu_hover_text">Hover Text</string>
+<string name="mainmenu_hover_text">Alt Text</string>
 <string name="mainmenu_comic_list">Archive</string>
 <string name="mainmenu_share">Share...</string>
 <string name="mainmenu_share_link">Link...</string>
