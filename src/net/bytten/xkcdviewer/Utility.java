@@ -24,7 +24,7 @@ public class Utility {
         extends AsyncTask<Params, Integer, Result>
     {
         private ProgressDialog pd;
-        
+
         public void start(Context cxt, String pdText, Params... params) {
             pd = ProgressDialog.show(cxt,
                     "xkcdViewer", pdText, true, true,
@@ -35,15 +35,18 @@ public class Utility {
             });
             execute(params);
         }
-        
+
+        @Override
         protected void onProgressUpdate(Integer... progress) {
             pd.setProgress(progress[0]);
         }
-        
+
+        @Override
         protected void onCancelled(Result result) {
             pd.dismiss();
         }
-        
+
+        @Override
         protected void onPostExecute(Result result) {
             pd.dismiss();
         }
@@ -57,7 +60,7 @@ public class Utility {
         try {
             fos = new FileOutputStream(file);
             is = new URL(uri.toString()).openStream();
-            
+
             byte[] buffer = new byte[512];
             int count = -1;
             while ((count = is.read(buffer)) != -1) {

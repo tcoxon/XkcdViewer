@@ -1,9 +1,6 @@
-/**
- * 
- */
 package net.bytten.xkcdviewer;
 
-import android.net.*;
+import android.net.Uri;
 
 interface IComicInfo {
     public Uri getImage();

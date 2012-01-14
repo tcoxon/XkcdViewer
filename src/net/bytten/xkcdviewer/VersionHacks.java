@@ -13,10 +13,10 @@ public class VersionHacks {
     public static int getSdkInt() {
         if (Build.VERSION.RELEASE.startsWith("1.5"))
             return 3;
-        
+
         return HelperInternal.getSdkIntInternal();
     }
-    
+
     private static class HelperInternal {
         private static int getSdkIntInternal() {
             return Build.VERSION.SDK_INT;
@@ -25,10 +25,10 @@ public class VersionHacks {
     //
     // !CREDIT:
     //
-    
+
     public static boolean isIncredible() {
         return Build.MODEL.toLowerCase().contains("incredible") ||
             Build.MODEL.toLowerCase().contains("adr6300");
     }
-    
+
 }

@@ -19,14 +19,14 @@ public class HackedWebView extends WebView {
     private float lastTouchX, lastTouchY;
     private boolean hasMoved = false;
     private boolean allowZoomButtons = false, allowPinchZoom = true;
-    
+
     public boolean getAllowZoomButtons() {
         return allowZoomButtons;
     }
     public void setAllowZoomButtons(boolean b) {
         allowZoomButtons = b;
     }
-    
+
     public void setAllowPinchZoom(boolean b) {
         allowPinchZoom = b;
     }
@@ -64,7 +64,7 @@ public class HackedWebView extends WebView {
             return PointerDownHack.getPointerCount(evt);
         return 1;
     }
-    
+
     @Override
     public boolean onTouchEvent(MotionEvent evt) {
         /* Horrible hack #1: Enable pinch-zoom without zoom buttons */
@@ -92,7 +92,7 @@ public class HackedWebView extends WebView {
                 break;
             }
         }
-        
+
         return consumed;
     }
 }

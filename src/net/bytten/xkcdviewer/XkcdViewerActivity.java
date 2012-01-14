@@ -87,10 +87,10 @@ public class XkcdViewerActivity extends Activity {
                        "http://(www\\.)?xkcd\\.com/([0-9]+)(/)?"),
                    archiveUrlPattern = Pattern.compile(
                        "http://(www\\.)?xkcd\\.com/archive(/)?");
-    
+
     public static final String DONATE_URL = "https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=C9JRVA3NTULSL&lc=US&item_name=XkcdViewer%20donation&item_number=xkcdviewer&currency_code=USD";
     public static final String XKCD_ARCHIVE_STRING = "http://xkcd.com/archive/";
-    
+
     public static final FrameLayout.LayoutParams ZOOM_PARAMS =
         new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.FILL_PARENT,
@@ -98,30 +98,30 @@ public class XkcdViewerActivity extends Activity {
                 Gravity.BOTTOM);
 
     public static final String PACKAGE_NAME = "net.bytten.xkcdviewer";
-    
+
 
     private HackedWebView webview;
     private TextView title;
     private IComicInfo comicInfo = new XkcdComicInfo();
     private EditText comicIdSel;
-    
+
     private View zoom = null;
-    
+
     private ImageView bookmarkBtn = null;
 
     // Constants for showActivityForResult calls
     static final int PICK_ARCHIVE_ITEM = 0;
-    
+
     // Prep the errors and the failedDialog so we can get a reference to it later.
     private String errors = "";
     private AlertDialog failedDialog;
-    
+
     // Constants defining dialogs
     static final int DIALOG_SHOW_HOVER_TEXT=0;
     static final int DIALOG_SHOW_ABOUT=1;
     static final int DIALOG_SEARCH_BY_TITLE=2;
     static final int DIALOG_FAILED=3;
-    
+
     protected void resetContent() {
         //Only hide the title bar if we're running an android less than Android 3.0
         if(VersionHacks.getSdkInt() < 11)
@@ -134,7 +134,7 @@ public class XkcdViewerActivity extends Activity {
 
         webview.requestFocus();
         zoom = webview.getZoomControls();
-        
+
         webview.setClickable(true);
         webview.setOnClickListener(new OnClickListener() {
             public void onClick(View v) {
@@ -202,13 +202,13 @@ public class XkcdViewerActivity extends Activity {
                 goToFinal();
             }
         });
-        
+
         ((ImageView)findViewById(R.id.randomBtn)).setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 goToRandom();
             }
         });
-        
+
         bookmarkBtn = (ImageView)findViewById(R.id.bookmarkBtn);
         bookmarkBtn.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
@@ -217,7 +217,7 @@ public class XkcdViewerActivity extends Activity {
         });
         refreshBookmarkBtn();
     }
-    
+
     public void refreshBookmarkBtn() {
         if (comicInfo != null && comicInfo.isBookmarked()) {
             bookmarkBtn.setBackgroundResource(android.R.drawable.btn_star_big_on);
@@ -225,7 +225,7 @@ public class XkcdViewerActivity extends Activity {
             bookmarkBtn.setBackgroundResource(android.R.drawable.btn_star_big_off);
         }
     }
-    
+
     public void toggleBookmark() {
         if (comicInfo != null) {
             if (comicInfo.isBookmarked()) {
@@ -237,31 +237,31 @@ public class XkcdViewerActivity extends Activity {
             refreshBookmarkBtn();
         }
     }
-    
+
     public void resetZoomControlEnable() {
         final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         final boolean allowPinchZoom = prefs.getBoolean("useZoomControls",!VersionHacks.isIncredible()),
                       showZoomButtons = prefs.getBoolean("showZoomButtons", true);
         setZoomControlEnable(allowPinchZoom, showZoomButtons);
     }
-    
+
     public boolean isReopenLastComic() {
         final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         return prefs.getBoolean("reopenLastComic",false);
     }
-    
+
     public String getLastReadComic() throws NumberFormatException {
         final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         return prefs.getString("lastComic", null);
     }
-    
+
     public void setLastReadComic(String id) {
         final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         final SharedPreferences.Editor editor = prefs.edit();
         editor.putString("lastComic", id);
         editor.commit();
     }
-    
+
     public void setZoomControlEnable(boolean allowPinchZoom, boolean showZoomButtons) {
         final ViewGroup zoomParent = (ViewGroup)webview.getParent().getParent();
         if (zoom.getParent() == zoomParent) zoomParent.removeView(zoom);
@@ -277,13 +277,13 @@ public class XkcdViewerActivity extends Activity {
             }
         }
     }
-    
+
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         resetContent();
-        
+
         final Intent i = this.getIntent();
         if (i.hasCategory(Intent.CATEGORY_BROWSABLE)) {
             // Link to comic
@@ -327,7 +327,7 @@ public class XkcdViewerActivity extends Activity {
             }
         }
     }
-    
+
     public void showArchive() {
         Intent i = new Intent(this, ArchiveActivity.class);
         i.setData(Uri.parse(XKCD_ARCHIVE_STRING));
@@ -335,7 +335,7 @@ public class XkcdViewerActivity extends Activity {
         i.putExtra(getPackageName() + "LoadType", ArchiveActivity.LoadType.ARCHIVE);
         startActivityForResult(i, PICK_ARCHIVE_ITEM);
     }
-    
+
     public void showBookmarks() {
         Intent i = new Intent(this, ArchiveActivity.class);
         i.setData(Uri.parse(XKCD_ARCHIVE_STRING));
@@ -343,7 +343,7 @@ public class XkcdViewerActivity extends Activity {
         i.putExtra(getPackageName() + "LoadType", ArchiveActivity.LoadType.BOOKMARKS);
         startActivityForResult(i, PICK_ARCHIVE_ITEM);
     }
-    
+
     @Override
     public void onResume() {
         super.onResume();
@@ -360,10 +360,10 @@ public class XkcdViewerActivity extends Activity {
     private void toast(String msg) {
         Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
     }
-    
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        
+
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.mainmenu, menu);
         return true;
@@ -420,9 +420,9 @@ public class XkcdViewerActivity extends Activity {
         }
         return false;
     }
-    
 
-    
+
+
     public String getVersion() {
         try {
             return getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
@@ -430,7 +430,7 @@ public class XkcdViewerActivity extends Activity {
             return "???";
         }
     }
-    
+
     public void donate() {
         Intent browser = new Intent();
         browser.setAction(Intent.ACTION_VIEW);
@@ -460,17 +460,18 @@ public class XkcdViewerActivity extends Activity {
             toast("No image loaded.");
             return;
         }
-        
+
         new Utility.CancellableAsyncTaskWithProgressDialog<Uri, File>() {
             Throwable e;
-            
+
+            @Override
             protected File doInBackground(Uri... params) {
                 try {
-                    
+
                     File file = File.createTempFile("xkcd-attachment-", ".png");
                     Utility.blockingSaveFile(file, params[0]);
                     return file;
-                    
+
                 } catch (InterruptedException ex) {
                     return null;
                 } catch (Throwable ex) {
@@ -478,26 +479,27 @@ public class XkcdViewerActivity extends Activity {
                     return null;
                 }
             }
-            
+
+            @Override
             protected void onPostExecute(File result) {
                 super.onPostExecute(result);
                 if (result != null) {
-                    
+
                     Uri uri = Uri.fromFile(result);
                     Intent intent = new Intent(Intent.ACTION_SEND, null);
                     intent.setType("image/png");
                     intent.putExtra(Intent.EXTRA_STREAM, uri);
                     startActivity(Intent.createChooser(intent, "Share image..."));
-                    
+
                 } else if (e != null) {
                     e.printStackTrace();
                     failed("Couldn't save attachment: "+e);
                 }
             }
-            
+
         }.start(this, "Saving image...", new Uri[]{comicInfo.getImage()});
     }
-    
+
     public void failed(final String reason) {
         runOnUiThread(new Runnable() {
             public void run() {
@@ -511,13 +513,13 @@ public class XkcdViewerActivity extends Activity {
             }
         });
     }
-    
+
     @Override
     protected Dialog onCreateDialog(int id) {
         // Set up variables for a dialog and a dialog builder. Only need one of each.
         Dialog dialog = null;
         AlertDialog.Builder builder = null;
-        
+
         // Determine the type of dialog based on the integer passed. These are defined in constants
         // at the top of the class.
         switch(id){
@@ -556,12 +558,12 @@ public class XkcdViewerActivity extends Activity {
         case DIALOG_SEARCH_BY_TITLE:
             //Build and show the Search By Title dialog
             builder = new AlertDialog.Builder(this);
-            
+
             LayoutInflater inflater = (LayoutInflater)getSystemService(
                     LAYOUT_INFLATER_SERVICE);
             View layout = inflater.inflate(R.layout.search_dlg,
                     (ViewGroup)findViewById(R.id.search_dlg));
-            
+
             final EditText input = (EditText)layout.findViewById(
                     R.id.search_dlg_edit_box);
 
@@ -594,9 +596,9 @@ public class XkcdViewerActivity extends Activity {
             AlertDialog.Builder adb = new AlertDialog.Builder(this);
             adb.setTitle("Error");
             adb.setIcon(android.R.drawable.ic_dialog_alert);
-            
+
             adb.setNeutralButton(android.R.string.ok, null);
-            
+
             //Set failedDialog to our dialog so we can dismiss
             //it manually
             failedDialog = adb.create();
@@ -624,7 +626,7 @@ public class XkcdViewerActivity extends Activity {
         case DIALOG_FAILED:
             //Get the alertdialog for the failedDialog
             AlertDialog adf = (AlertDialog) dialog;
-            
+
             adf.setMessage(errors);
             //Set failedDialog to our dialog so we can dismiss
             //it manually
@@ -644,15 +646,15 @@ public class XkcdViewerActivity extends Activity {
 
     /* Comic-loading implementation using AsyncTasks and xkcd's JSON
      * interface (http://xkcd.com/json.html) follows.
-     * 
+     *
      * goTo* methods must be called in UI thread
      * load* methods must be called in UI thread
      * create* methods can be called anywhere
      * fetch* methods must be called in a background thread
      */
-    
+
     public void goToFirst() {
-    	loadComic(createComicUri("1" /* TODO use comic provider */));
+        loadComic(createComicUri("1" /* TODO use comic provider */));
     }
     public void goToPrev() {
         loadComic(createComicUri(comicInfo.getPrevId()));
@@ -663,20 +665,21 @@ public class XkcdViewerActivity extends Activity {
     public void goToFinal() {
         loadComic(createFinalComicUri());
     }
-    
+
     public Uri createComicUri(String id) {
         return Uri.parse("http://xkcd.com/"+id+"/info.0.json");
     }
     public Uri createFinalComicUri() {
         return Uri.parse("http://xkcd.com/info.0.json");
     }
-    
+
     public void goToRandom() {
         /* Can't just choose a random number and go to the comic, because if
          * the user cancelled the comic loading at start, we won't know how
          * many comics there are! */
         new Utility.CancellableAsyncTaskWithProgressDialog<Object, Uri>() {
 
+            @Override
             protected Uri doInBackground(Object... params) {
                 try {
                     return fetchRandomUri();
@@ -691,7 +694,8 @@ public class XkcdViewerActivity extends Activity {
                     return null;
                 }
             }
-            
+
+            @Override
             protected void onPostExecute(Uri result) {
                 super.onPostExecute(result);
                 if (result != null)
@@ -699,10 +703,10 @@ public class XkcdViewerActivity extends Activity {
                 else
                     toast("Failed to get random comic");
             }
-            
+
        }.start(this, "Randomizing...", new Object[]{null});
     }
-    
+
     public Uri fetchRandomUri() throws MalformedURLException, IOException,
         NumberFormatException
     {
@@ -716,18 +720,19 @@ public class XkcdViewerActivity extends Activity {
             return null;
         }
     }
-    
+
     private class ComicInfoOrError {
         public IComicInfo comicInfo = null;
         public Throwable e = null;
         public ComicInfoOrError(Throwable e) { this.e = e; }
         public ComicInfoOrError(IComicInfo d) { comicInfo = d; }
     }
-    
+
     public void loadComic(final Uri uri) {
-        
+
         new Utility.CancellableAsyncTaskWithProgressDialog<Object, ComicInfoOrError>() {
 
+            @Override
             protected ComicInfoOrError doInBackground(Object... params) {
                 try {
                     return new ComicInfoOrError(fetchComicInfo(uri));
@@ -735,7 +740,8 @@ public class XkcdViewerActivity extends Activity {
                     return new ComicInfoOrError(e);
                 }
             }
-            
+
+            @Override
             protected void onPostExecute(ComicInfoOrError result) {
                 super.onPostExecute(result);
                 if (result.comicInfo != null) {
@@ -744,7 +750,7 @@ public class XkcdViewerActivity extends Activity {
                     comicIdSel.setText(comicInfo.getId());
                     refreshBookmarkBtn();
                     setLastReadComic(comicInfo.getId());
-                    
+
                     loadComicImage(comicInfo.getImage());
                 } else {
                     result.e.printStackTrace();
@@ -768,10 +774,10 @@ public class XkcdViewerActivity extends Activity {
                     }
                 }
             }
-            
+
         }.start(this, "Loading comic...", new Object[]{null});
     }
-    
+
     private String blockingReadUri(Uri uri) throws IOException,
         InterruptedException
     {
@@ -786,7 +792,7 @@ public class XkcdViewerActivity extends Activity {
         }
         return sb.toString();
     }
-    
+
     public IComicInfo fetchComicInfo(Uri uri) throws IOException, JSONException,
         InterruptedException
     {
@@ -801,7 +807,7 @@ public class XkcdViewerActivity extends Activity {
                 Integer.toString(data.num));
         return data;
     }
-    
+
     public void loadComicImage(Uri uri) {
         webview.clearView();
         final ProgressDialog pd = ProgressDialog.show(
@@ -830,7 +836,7 @@ public class XkcdViewerActivity extends Activity {
         });
         webview.loadUrl(uri.toString());
     }
-    
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if(requestCode == PICK_ARCHIVE_ITEM) {

@@ -19,31 +19,31 @@ public class ArchiveData {
             // group(1): comic number;   group(2): date;   group(3): title
             "\\s*<a href=\"/(\\d+)/\" title=\"(\\d+-\\d+-\\d+)\">([^<]+)</a><br/>\\s*");
     private static final String ARCHIVE_URL = "http://www.xkcd.com/archive/";
-    
+
     /* The maximum age the cache is allowed to reach in milliseconds */
     private static final long CACHE_AGE_LIMIT = 60*60*1000; // = 1 hour
-    
+
     public static class ArchiveItem {
         public boolean bookmarked = false;
         public String title, comicId;
-        
+
         @Override
         public String toString() {
             return  comicId + " - " + title;
         }
     }
-    
+
     /* Putting the cache in a SoftReference means the system can still
      * garbage collect it if low on memory. */
     private static SoftReference<List<ArchiveItem>> cache = null;
     private static Date cacheModDate = null;
-    
+
     public static boolean isCacheValid() {
         return cache != null && cache.get() != null && cacheModDate != null &&
             cacheModDate.before(new Date(cacheModDate.getTime() +
                     CACHE_AGE_LIMIT));
     }
-    
+
     /* Do NOT call in a UI thread. May block until data has been fetched.
      * Do NOT add or remove elements from the returned list (but bookmarking
      *     may be altered). */
@@ -54,7 +54,7 @@ public class ArchiveData {
             fetchData(cxt);
         return cache.get();
     }
-    
+
     public static void refresh(Context cxt) throws IOException,
         InterruptedException
     {
@@ -67,7 +67,7 @@ public class ArchiveData {
         List<ArchiveItem> archiveItems = new ArrayList<ArchiveItem>();
         URL url = new URL(ARCHIVE_URL);
         BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream()));
-        
+
         try {
             String line;
             while ((line = br.readLine()) != null) {
@@ -83,7 +83,7 @@ public class ArchiveData {
 
                 Utility.allowInterrupt();
             }
-            
+
             if (cache != null)
                 cache.clear();
             cache = new SoftReference<List<ArchiveItem>>(archiveItems);

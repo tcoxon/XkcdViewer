@@ -28,28 +28,29 @@ import net.bytten.xkcdviewer.ArchiveData.ArchiveItem;
 
 public class ArchiveActivity extends ListActivity {
     static public enum LoadType { ARCHIVE, BOOKMARKS, SEARCH_TITLE };
-    
+
     private List<ArchiveItem> archiveItems;
     protected String query = null;
     protected LoadType loadtype = LoadType.ARCHIVE;
-    
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        
+
         final Intent intent = getIntent();
         query = intent.getStringExtra(getPackageName() + "query");
         loadtype = (LoadType) intent.getSerializableExtra(getPackageName() + "LoadType");
-        
+
         resetContent();
     }
-    
+
     protected void resetContent() {
         new Utility.CancellableAsyncTaskWithProgressDialog<Object,
         List<ArchiveItem> >()
         {
             protected Throwable failReason = null;
-            
+
+            @Override
             protected List<ArchiveItem> doInBackground(Object... params) {
                 try {
                     return fetchContent(loadtype, query);
@@ -58,7 +59,8 @@ public class ArchiveActivity extends ListActivity {
                     return null;
                 }
             }
-            
+
+            @Override
             protected void onPostExecute(List<ArchiveItem> result) {
                 super.onPostExecute(result);
                 if (result != null) {
@@ -79,19 +81,19 @@ public class ArchiveActivity extends ListActivity {
                     }
                 }
             }
-            
+
         }.start(this, "Loading archive...", new Object[]{null});
 
         getListView().setFastScrollEnabled(true);
     }
-    
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.archive, menu);
         return true;
     }
-    
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
@@ -102,7 +104,7 @@ public class ArchiveActivity extends ListActivity {
             return super.onOptionsItemSelected(item);
         }
     }
-    
+
     public void refresh() {
         new Utility.CancellableAsyncTaskWithProgressDialog<Object,
             Boolean>()
@@ -116,7 +118,7 @@ public class ArchiveActivity extends ListActivity {
                     return false;
                 }
             }
-            
+
             @Override
             protected void onPostExecute(Boolean result) {
                 super.onPostExecute(result);
@@ -128,27 +130,27 @@ public class ArchiveActivity extends ListActivity {
                     resetContent();
                 }
             }
-            
+
         }.start(this, "Loading archive...", new Object[]{null});
     }
-    
+
     @Override
     protected void onListItemClick(ListView l, View v, int position, long id) {
-        
+
         Intent comic = new Intent();
         comic.addCategory(Intent.CATEGORY_BROWSABLE);
         comic.putExtra(getPackageName()+ "comicId", archiveItems.get(position).comicId);
-        
+
         setResult(RESULT_OK, comic);
         finish();
     }
-    
+
     private class ArchiveAdapter extends ArrayAdapter<ArchiveItem> {
-        
+
         public ArchiveAdapter(Context context, int textViewResourceId, List<ArchiveItem> results) {
             super(context, textViewResourceId, results);
         }
-        
+
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
             View v = convertView;
@@ -156,12 +158,12 @@ public class ArchiveActivity extends ListActivity {
                 LayoutInflater vi = (LayoutInflater)getSystemService(LAYOUT_INFLATER_SERVICE);
                 v = vi.inflate(R.layout.archive_item_layout, null);
             }
-            
+
             final ArchiveItem i = archiveItems.get(position);
             if(i != null) {
                 CheckBox cb = (CheckBox) v.findViewById(R.id.archive_item_bookmarked);
                 TextView tv = (TextView) v.findViewById(R.id.archive_item_textView);
-                
+
                 if(cb != null) {
                     cb.setChecked(i.bookmarked);
                     cb.setFocusable(false);
@@ -174,7 +176,7 @@ public class ArchiveActivity extends ListActivity {
                             } else {
                                 BookmarksHelper.addBookmark(getContext(), i.comicId, i.title);
                             }
-                            i.bookmarked = !i.bookmarked;                            
+                            i.bookmarked = !i.bookmarked;
                         }
                     });
                 }
@@ -182,12 +184,12 @@ public class ArchiveActivity extends ListActivity {
                     tv.setText(i.toString());
                 }
             }
-            
+
             v.setEnabled(true);
             return v;
         }
     }
-    
+
     protected List<ArchiveItem> fetchContent(LoadType loadtype, String query) throws Throwable {
         switch (loadtype) {
         case BOOKMARKS:
@@ -198,17 +200,17 @@ public class ArchiveActivity extends ListActivity {
             return fetchArchive();
         }
     }
-    
+
     protected List<ArchiveItem> fetchArchive() throws Throwable {
         archiveItems = ArchiveData.getData(this);
         return archiveItems;
     }
-    
+
     protected List<ArchiveItem> fetchBookmarks() throws Throwable {
         archiveItems = BookmarksHelper.getBookmarks(this);
         return archiveItems;
     }
-    
+
     protected List<ArchiveItem> fetchSearchByTitleResults(String titleQuery) throws Throwable {
         String[] titleWords = titleQuery.toLowerCase().split("\\s");
         List<ArchiveItem> rawItems = fetchArchive();
@@ -228,7 +230,7 @@ public class ArchiveActivity extends ListActivity {
         }
         return archiveItems;
     }
-    
+
     protected void showResults(LoadType loadType, List<ArchiveItem> results) {
         switch (loadType) {
         case BOOKMARKS:
@@ -250,5 +252,5 @@ public class ArchiveActivity extends ListActivity {
         AlertDialog alert = builder.create();
         alert.show();
     }
-    
+
 }

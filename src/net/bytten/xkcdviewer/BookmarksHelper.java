@@ -14,7 +14,7 @@ public class BookmarksHelper extends SQLiteOpenHelper {
 
     public static final String DB_NAME    = "bookmarks";
     public static final int    DB_VERSION = 1;
-    
+
     public BookmarksHelper(Context context) {
         super(context, DB_NAME, null, DB_VERSION);
     }
@@ -35,7 +35,7 @@ public class BookmarksHelper extends SQLiteOpenHelper {
         }
         return dbInstance;
     }
-    
+
     public static List<ArchiveItem> getBookmarks(Context cxt) {
         final Cursor results = getDb(cxt).rawQuery("SELECT * FROM bookmarks", new String[]{});
         try {
