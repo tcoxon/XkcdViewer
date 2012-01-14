@@ -1,9 +1,11 @@
 package net.bytten.xkcdviewer;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URL;
 
 import android.app.ProgressDialog;
@@ -14,6 +16,21 @@ import android.net.Uri;
 import android.os.AsyncTask;
 
 public class Utility {
+
+    public static String blockingReadUri(Uri uri) throws IOException,
+        InterruptedException
+    {
+        StringBuffer sb = new StringBuffer();
+        BufferedReader br = new BufferedReader(new InputStreamReader(
+                new URL(uri.toString()).openStream()));
+        String line;
+        while ((line = br.readLine()) != null) {
+            sb.append(line);
+            sb.append('\n');
+            Utility.allowInterrupt();
+        }
+        return sb.toString();
+    }
 
     public static void allowInterrupt() throws InterruptedException {
         if (Thread.interrupted())

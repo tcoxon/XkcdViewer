@@ -20,20 +20,12 @@
  */
 package net.bytten.xkcdviewer;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.json.JSONException;
-import org.json.JSONObject;
-import org.json.JSONTokener;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -80,16 +72,7 @@ public class XkcdViewerActivity extends Activity {
         private static final long serialVersionUID = 1L;
     }
 
-    static private Pattern
-                   xkcdHomePattern = Pattern.compile(
-                       "http://(www\\.)?xkcd\\.com(/)?"),
-                   comicUrlPattern = Pattern.compile(
-                       "http://(www\\.)?xkcd\\.com/([0-9]+)(/)?"),
-                   archiveUrlPattern = Pattern.compile(
-                       "http://(www\\.)?xkcd\\.com/archive(/)?");
-
     public static final String DONATE_URL = "https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=C9JRVA3NTULSL&lc=US&item_name=XkcdViewer%20donation&item_number=xkcdviewer&currency_code=USD";
-    public static final String XKCD_ARCHIVE_STRING = "http://xkcd.com/archive/";
 
     public static final FrameLayout.LayoutParams ZOOM_PARAMS =
         new FrameLayout.LayoutParams(
@@ -103,6 +86,8 @@ public class XkcdViewerActivity extends Activity {
     private HackedWebView webview;
     private TextView title;
     private IComicInfo comicInfo = new XkcdComicInfo();
+    private IComicDefinition comicDef = new XkcdComicDefinition();
+    private IComicProvider provider = comicDef.getProvider();
     private EditText comicIdSel;
 
     private View zoom = null;
@@ -288,25 +273,22 @@ public class XkcdViewerActivity extends Activity {
         if (i.hasCategory(Intent.CATEGORY_BROWSABLE)) {
             // Link to comic
             boolean tryArchive = true;
-            Matcher m = comicUrlPattern.matcher(i.getDataString());
-            if (m.matches()) {
+            if (comicDef.isComicUrl(i.getData())) {
                 try {
-                    loadComic(createComicUri(m.group(2)));
+                    loadComic(provider.comicDataUrlForUrl(i.getData()));
                     tryArchive = false;
                 } catch (NumberFormatException e) {
                     // Fall through to trying the URL as an archive URL
                 }
             }
             if (tryArchive) {
-                m = archiveUrlPattern.matcher(i.getDataString());
-                if (m.matches()) {
+                if (comicDef.isArchiveUrl(i.getData())) {
                     showArchive();
                     this.finish();
                 } else {
                     // it wasn't a link to comic or to the archive
-                    m = xkcdHomePattern.matcher(i.getDataString());
                     // last ditch attempt: was it a link to the home page?
-                    if (m.matches()) {
+                    if (comicDef.isHomeUrl(i.getData())) {
                         goToFinal();
                     } else {
                         toast("xkcdViewer can't display this content.");
@@ -330,7 +312,7 @@ public class XkcdViewerActivity extends Activity {
 
     public void showArchive() {
         Intent i = new Intent(this, ArchiveActivity.class);
-        i.setData(Uri.parse(XKCD_ARCHIVE_STRING));
+        i.setData(comicDef.getArchiveUrl());
         i.setAction(Intent.ACTION_VIEW);
         i.putExtra(getPackageName() + "LoadType", ArchiveActivity.LoadType.ARCHIVE);
         startActivityForResult(i, PICK_ARCHIVE_ITEM);
@@ -338,7 +320,7 @@ public class XkcdViewerActivity extends Activity {
 
     public void showBookmarks() {
         Intent i = new Intent(this, ArchiveActivity.class);
-        i.setData(Uri.parse(XKCD_ARCHIVE_STRING));
+        i.setData(comicDef.getArchiveUrl());
         i.setAction(Intent.ACTION_VIEW);
         i.putExtra(getPackageName() + "LoadType", ArchiveActivity.LoadType.BOOKMARKS);
         startActivityForResult(i, PICK_ARCHIVE_ITEM);
@@ -366,7 +348,17 @@ public class XkcdViewerActivity extends Activity {
 
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.mainmenu, menu);
+        menu.findItem(R.id.MENU_AUTHOR_LINK)
+            .setTitle(comicDef.getAuthorLinkText());
         return true;
+    }
+    
+    public void loadAuthorLink() {
+        Intent browser = new Intent();
+        browser.setAction(Intent.ACTION_VIEW);
+        browser.addCategory(Intent.CATEGORY_BROWSABLE);
+        browser.setData(comicDef.getAuthorLinkUrl());
+        startActivity(browser);
     }
 
     @Override
@@ -404,6 +396,9 @@ public class XkcdViewerActivity extends Activity {
             return true;
         case R.id.MENU_ARCHIVE:
             showArchive();
+            return true;
+        case R.id.MENU_AUTHOR_LINK:
+            loadAuthorLink();
             return true;
         case R.id.MENU_DONATE:
             donate();
@@ -663,14 +658,11 @@ public class XkcdViewerActivity extends Activity {
         loadComic(createComicUri(comicInfo.getNextId()));
     }
     public void goToFinal() {
-        loadComic(createFinalComicUri());
+        loadComic(provider.getFinalComicUrl());
     }
 
     public Uri createComicUri(String id) {
-        return Uri.parse("http://xkcd.com/"+id+"/info.0.json");
-    }
-    public Uri createFinalComicUri() {
-        return Uri.parse("http://xkcd.com/info.0.json");
+        return provider.createComicUrl(id);
     }
 
     public void goToRandom() {
@@ -683,13 +675,7 @@ public class XkcdViewerActivity extends Activity {
             protected Uri doInBackground(Object... params) {
                 try {
                     return fetchRandomUri();
-                } catch (MalformedURLException e) {
-                    e.printStackTrace();
-                    return null;
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    return null;
-                } catch (NumberFormatException e) {
+                } catch (Exception e) {
                     e.printStackTrace();
                     return null;
                 }
@@ -707,18 +693,8 @@ public class XkcdViewerActivity extends Activity {
        }.start(this, "Randomizing...", new Object[]{null});
     }
 
-    public Uri fetchRandomUri() throws MalformedURLException, IOException,
-        NumberFormatException
-    {
-        HttpURLConnection http = (HttpURLConnection) new URL("http",
-                "dynamic.xkcd.com", "/random/comic").openConnection();
-        String redirect = http.getHeaderField("Location");
-        Matcher m = comicUrlPattern.matcher(redirect);
-        if (m.matches()) {
-            return createComicUri(m.group(2));
-        } else {
-            return null;
-        }
+    public Uri fetchRandomUri() throws Exception {
+        return provider.fetchRandomComicUrl();
     }
 
     private class ComicInfoOrError {
@@ -778,34 +754,10 @@ public class XkcdViewerActivity extends Activity {
         }.start(this, "Loading comic...", new Object[]{null});
     }
 
-    private String blockingReadUri(Uri uri) throws IOException,
-        InterruptedException
-    {
-        StringBuffer sb = new StringBuffer();
-        BufferedReader br = new BufferedReader(new InputStreamReader(
-                new URL(uri.toString()).openStream()));
-        String line;
-        while ((line = br.readLine()) != null) {
-            sb.append(line);
-            sb.append('\n');
-            Utility.allowInterrupt();
-        }
-        return sb.toString();
-    }
-
-    public IComicInfo fetchComicInfo(Uri uri) throws IOException, JSONException,
-        InterruptedException
-    {
-        String text = blockingReadUri(uri);
-        JSONObject obj = (JSONObject)new JSONTokener(text).nextValue();
-        XkcdComicInfo data = new XkcdComicInfo();
-        data.img = Uri.parse(obj.getString("img"));
-        data.alt = obj.getString("alt");
-        data.num = obj.getInt("num");
-        data.title = obj.getString("title");
-        data.bookmarked = BookmarksHelper.isBookmarked(this,
-                Integer.toString(data.num));
-        return data;
+    public IComicInfo fetchComicInfo(Uri uri) throws Exception {
+        IComicInfo ci = provider.fetchComicInfo(uri);
+        ci.setBookmarked(BookmarksHelper.isBookmarked(this, ci.getId()));
+        return ci;
     }
 
     public void loadComicImage(Uri uri) {

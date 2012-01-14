@@ -19,8 +19,9 @@
     
     
     
-    <item android:id="@+id/MENU_DONATE" android:title="@string/mainmenu_donate" android:icon="@drawable/ic_menu_heart"></item>
+    <item android:id="@+id/MENU_AUTHOR_LINK" android:title="@string/mainmenu_author_link" android:icon="@drawable/ic_menu_heart"></item><item android:id="@+id/MENU_DONATE" android:title="@string/mainmenu_donate" android:icon="@drawable/ic_menu_heart"></item>
     <item android:id="@+id/MENU_ABOUT" android:title="@string/mainmenu_about" android:icon="@android:drawable/ic_menu_info_details"></item>
+    
     
     
     
