@@ -21,6 +21,8 @@ public class BookmarksHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
+        /* The field 'number' is so named because of historical reasons where
+         * all supported comics were xkcd, whose comic ID is a number. */
         db.execSQL("CREATE TABLE bookmarks (number TEXT, title TEXT);");
     }
 

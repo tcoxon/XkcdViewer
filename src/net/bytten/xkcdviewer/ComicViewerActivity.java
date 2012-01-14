@@ -103,6 +103,7 @@ public abstract class ComicViewerActivity extends Activity {
     static final int DIALOG_FAILED=3;
 
     protected abstract IComicDefinition makeComicDef();
+    protected abstract Class<? extends ArchiveActivity> getArchiveActivityClass();
     
     protected void resetContent() {
         comicDef = makeComicDef();
@@ -309,7 +310,7 @@ public abstract class ComicViewerActivity extends Activity {
     }
 
     public void showArchive() {
-        Intent i = new Intent(this, ArchiveActivity.class);
+        Intent i = new Intent(this, getArchiveActivityClass());
         i.setData(comicDef.getArchiveUrl());
         i.setAction(Intent.ACTION_VIEW);
         i.putExtra(getPackageName() + "LoadType", ArchiveActivity.LoadType.ARCHIVE);
@@ -317,7 +318,7 @@ public abstract class ComicViewerActivity extends Activity {
     }
 
     public void showBookmarks() {
-        Intent i = new Intent(this, ArchiveActivity.class);
+        Intent i = new Intent(this, getArchiveActivityClass());
         i.setData(comicDef.getArchiveUrl());
         i.setAction(Intent.ACTION_VIEW);
         i.putExtra(getPackageName() + "LoadType", ArchiveActivity.LoadType.BOOKMARKS);
@@ -575,7 +576,7 @@ public abstract class ComicViewerActivity extends Activity {
                 public void onClick(DialogInterface dialog, int which) {
                     String query = input.getText().toString();
                     Uri uri = comicDef.getArchiveUrl();
-                    Intent i = new Intent(ComicViewerActivity.this, ArchiveActivity.class);
+                    Intent i = new Intent(ComicViewerActivity.this, getArchiveActivityClass());
                     i.setAction(Intent.ACTION_VIEW);
                     i.setData(uri);
                     i.putExtra(getPackageName() + "LoadType", ArchiveActivity.LoadType.SEARCH_TITLE);

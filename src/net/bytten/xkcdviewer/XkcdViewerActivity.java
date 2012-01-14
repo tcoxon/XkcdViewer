@@ -7,4 +7,9 @@ public class XkcdViewerActivity extends ComicViewerActivity {
         return new XkcdComicDefinition();
     }
 
+    @Override
+    protected Class<? extends ArchiveActivity> getArchiveActivityClass() {
+        return XkcdArchiveActivity.class;
+    }
+
 }

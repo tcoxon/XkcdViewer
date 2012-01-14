@@ -26,16 +26,24 @@ import android.widget.TextView;
 
 import net.bytten.xkcdviewer.ArchiveData.ArchiveItem;
 
-public class ArchiveActivity extends ListActivity {
+public abstract class ArchiveActivity extends ListActivity {
     static public enum LoadType { ARCHIVE, BOOKMARKS, SEARCH_TITLE };
 
     private List<ArchiveItem> archiveItems;
+    
     protected String query = null;
     protected LoadType loadtype = LoadType.ARCHIVE;
+    protected IComicDefinition comicDef;
+    protected ArchiveData archive;
+
+    protected abstract IComicDefinition makeComicDef();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        
+        comicDef = makeComicDef();
+        archive = ArchiveData.getArchive(comicDef);
 
         final Intent intent = getIntent();
         query = intent.getStringExtra(getPackageName() + "query");
@@ -112,7 +120,7 @@ public class ArchiveActivity extends ListActivity {
             @Override
             protected Boolean doInBackground(Object... params) {
                 try {
-                    ArchiveData.refresh(ArchiveActivity.this);
+                    archive.refresh(ArchiveActivity.this);
                     return true;
                 } catch (Throwable e) {
                     return false;
@@ -202,7 +210,7 @@ public class ArchiveActivity extends ListActivity {
     }
 
     protected List<ArchiveItem> fetchArchive() throws Throwable {
-        archiveItems = ArchiveData.getData(this);
+        archiveItems = archive.getData(this);
         return archiveItems;
     }
 

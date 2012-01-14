@@ -1,8 +1,15 @@
 package net.bytten.xkcdviewer;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import net.bytten.xkcdviewer.ArchiveData.ArchiveItem;
 
 import org.json.JSONObject;
 import org.json.JSONTokener;
@@ -11,6 +18,11 @@ import android.net.Uri;
 
 public class XkcdComicProvider implements IComicProvider {
 
+    private static final Pattern archiveItemPattern = Pattern.compile(
+            // group(1): comic number;   group(2): date;   group(3): title
+            "\\s*<a href=\"/(\\d+)/\" title=\"(\\d+-\\d+-\\d+)\">([^<]+)</a><br/>\\s*");
+    private static final String ARCHIVE_URL = "http://www.xkcd.com/archive/";
+    
     private XkcdComicDefinition def;
     
     public XkcdComicProvider(XkcdComicDefinition def) {
@@ -71,6 +83,32 @@ public class XkcdComicProvider implements IComicProvider {
     @Override
     public IComicInfo createEmptyComicInfo() {
         return new XkcdComicInfo();
+    }
+
+    @Override
+    public List<ArchiveItem> fetchArchive() throws Exception {
+        List<ArchiveItem> archiveItems = new ArrayList<ArchiveItem>();
+        URL url = new URL(ARCHIVE_URL);
+        BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream()));
+
+        try {
+            String line;
+            while ((line = br.readLine()) != null) {
+                Matcher m = archiveItemPattern.matcher(line);
+                while (m.find()) {
+                    ArchiveItem item = new ArchiveItem();
+                    item.comicId = m.group(1);
+                    item.title = m.group(3);
+                    archiveItems.add(item);
+                }
+
+                Utility.allowInterrupt();
+            }
+
+        } finally {
+            br.close();
+        }
+        return archiveItems;
     }
 
 }
