@@ -44,7 +44,7 @@ public class BookmarksHelper extends SQLiteOpenHelper {
                 results.moveToNext();
                 while (!results.isAfterLast()) {
                     ArchiveItem item = new ArchiveItem();
-                    item.comicNumber = results.getString(0);
+                    item.comicId = results.getString(0);
                     item.title = results.getString(1);
                     item.bookmarked = true;
                     list.add(item);
@@ -67,7 +67,7 @@ public class BookmarksHelper extends SQLiteOpenHelper {
         }
     }
     public static boolean isBookmarked(Context cxt, ArchiveItem item) {
-        return isBookmarked(cxt, item.comicNumber);
+        return isBookmarked(cxt, item.comicId);
     }
     public static void addBookmark(Context cxt, String comicNumber, String title) {
         getDb(cxt).execSQL(
@@ -75,7 +75,7 @@ public class BookmarksHelper extends SQLiteOpenHelper {
                 new Object[]{comicNumber, title});
     }
     public static void addBookmark(Context cxt, ArchiveItem item) {
-        addBookmark(cxt, item.comicNumber, item.title);
+        addBookmark(cxt, item.comicId, item.title);
     }
     public static void removeBookmark(Context cxt, String comicNumber) {
         getDb(cxt).execSQL(
@@ -83,6 +83,6 @@ public class BookmarksHelper extends SQLiteOpenHelper {
                 new Object[]{comicNumber});
     }
     public static void removeBookmark(Context cxt, ArchiveItem item) {
-        removeBookmark(cxt, item.comicNumber);
+        removeBookmark(cxt, item.comicId);
     }
 }

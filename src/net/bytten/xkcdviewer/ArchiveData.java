@@ -25,11 +25,11 @@ public class ArchiveData {
     
     public static class ArchiveItem {
         public boolean bookmarked = false;
-        public String title, comicNumber;
+        public String title, comicId;
         
         @Override
         public String toString() {
-            return  comicNumber + " - " + title;
+            return  comicId + " - " + title;
         }
     }
     
@@ -74,7 +74,7 @@ public class ArchiveData {
                 Matcher m = archiveItemPattern.matcher(line);
                 while (m.find()) {
                     ArchiveItem item = new ArchiveItem();
-                    item.comicNumber = m.group(1);
+                    item.comicId = m.group(1);
                     item.title = m.group(3);
                     if (BookmarksHelper.isBookmarked(cxt, item))
                         item.bookmarked = true;

@@ -137,7 +137,7 @@ public class ArchiveActivity extends ListActivity {
         
         Intent comic = new Intent();
         comic.addCategory(Intent.CATEGORY_BROWSABLE);
-        comic.putExtra(getPackageName()+ "comicNumber", archiveItems.get(position).comicNumber);
+        comic.putExtra(getPackageName()+ "comicId", archiveItems.get(position).comicId);
         
         setResult(RESULT_OK, comic);
         finish();
@@ -170,9 +170,9 @@ public class ArchiveActivity extends ListActivity {
                         @Override
                         public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                             if (!isChecked) {
-                                BookmarksHelper.removeBookmark(getContext(), i.comicNumber);
+                                BookmarksHelper.removeBookmark(getContext(), i.comicId);
                             } else {
-                                BookmarksHelper.addBookmark(getContext(), i.comicNumber, i.title);
+                                BookmarksHelper.addBookmark(getContext(), i.comicId, i.title);
                             }
                             i.bookmarked = !i.bookmarked;                            
                         }

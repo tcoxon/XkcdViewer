@@ -80,13 +80,6 @@ public class XkcdViewerActivity extends Activity {
         private static final long serialVersionUID = 1L;
     }
 
-    static class ComicInfo {
-        public Uri img;
-        public String title = "", alt = "";
-        public int num;
-        public boolean bookmarked = false;
-    }
-
     static private Pattern
                    xkcdHomePattern = Pattern.compile(
                        "http://(www\\.)?xkcd\\.com(/)?"),
@@ -109,7 +102,7 @@ public class XkcdViewerActivity extends Activity {
 
     private HackedWebView webview;
     private TextView title;
-    private ComicInfo comicInfo = new ComicInfo();
+    private IComicInfo comicInfo = new XkcdComicInfo();
     private EditText comicIdSel;
     
     private View zoom = null;
@@ -145,14 +138,13 @@ public class XkcdViewerActivity extends Activity {
         webview.setClickable(true);
         webview.setOnClickListener(new OnClickListener() {
             public void onClick(View v) {
-                //showHoverText();
                 showDialog(DIALOG_SHOW_HOVER_TEXT);
             }
         });
 
-        title.setText(comicInfo.title);
+        title.setText(comicInfo.getTitle());
 
-        comicIdSel.setText(Integer.toString(currentComicNumber()));
+        comicIdSel.setText(comicInfo.getId());
         comicIdSel.setInputType(InputType.TYPE_CLASS_NUMBER);
         comicIdSel.setOnEditorActionListener(new OnEditorActionListener() {
             public boolean onEditorAction(TextView v, int actionId,
@@ -164,7 +156,7 @@ public class XkcdViewerActivity extends Activity {
                         event.getKeyCode() == KeyEvent.KEYCODE_ENTER)))
                 {
                     try {
-                        loadComic(createComicUri(Integer.parseInt(text)));
+                        loadComic(createComicUri(text));
                         comicIdSel.setText("");
                     } catch (NumberFormatException e) {
                         toast("Enter a number");
@@ -227,7 +219,7 @@ public class XkcdViewerActivity extends Activity {
     }
     
     public void refreshBookmarkBtn() {
-        if (comicInfo != null && comicInfo.bookmarked) {
+        if (comicInfo != null && comicInfo.isBookmarked()) {
             bookmarkBtn.setBackgroundResource(android.R.drawable.btn_star_big_on);
         } else {
             bookmarkBtn.setBackgroundResource(android.R.drawable.btn_star_big_off);
@@ -236,12 +228,12 @@ public class XkcdViewerActivity extends Activity {
     
     public void toggleBookmark() {
         if (comicInfo != null) {
-            if (comicInfo.bookmarked) {
-                BookmarksHelper.removeBookmark(this, Integer.toString(currentComicNumber()));
+            if (comicInfo.isBookmarked()) {
+                BookmarksHelper.removeBookmark(this, comicInfo.getId());
             } else {
-                BookmarksHelper.addBookmark(this, Integer.toString(currentComicNumber()), comicInfo.title);
+                BookmarksHelper.addBookmark(this, comicInfo.getId(), comicInfo.getTitle());
             }
-            comicInfo.bookmarked = !comicInfo.bookmarked;
+            comicInfo.setBookmarked(!comicInfo.isBookmarked());
             refreshBookmarkBtn();
         }
     }
@@ -258,15 +250,15 @@ public class XkcdViewerActivity extends Activity {
         return prefs.getBoolean("reopenLastComic",false);
     }
     
-    public int getLastReadComic() throws NumberFormatException {
+    public String getLastReadComic() throws NumberFormatException {
         final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        return Integer.parseInt(prefs.getString("lastComic", null));
+        return prefs.getString("lastComic", null);
     }
     
-    public void setLastReadComic(int n) {
+    public void setLastReadComic(String id) {
         final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         final SharedPreferences.Editor editor = prefs.edit();
-        editor.putString("lastComic", Integer.toString(n));
+        editor.putString("lastComic", id);
         editor.commit();
     }
     
@@ -299,7 +291,7 @@ public class XkcdViewerActivity extends Activity {
             Matcher m = comicUrlPattern.matcher(i.getDataString());
             if (m.matches()) {
                 try {
-                    loadComic(createComicUri(Integer.parseInt(m.group(2))));
+                    loadComic(createComicUri(m.group(2)));
                     tryArchive = false;
                 } catch (NumberFormatException e) {
                     // Fall through to trying the URL as an archive URL
@@ -381,11 +373,10 @@ public class XkcdViewerActivity extends Activity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
         case R.id.MENU_HOVER_TEXT:
-            //showHoverText();
             showDialog(DIALOG_SHOW_HOVER_TEXT);
             return true;
         case R.id.MENU_REFRESH:
-            loadComic(createComicUri(currentComicNumber()));
+            loadComic(createComicUri(comicInfo.getId()));
             return true;
         case R.id.MENU_RANDOM:
             goToRandom();
@@ -418,14 +409,12 @@ public class XkcdViewerActivity extends Activity {
             donate();
             return true;
         case R.id.MENU_ABOUT:
-            //showAbout();
             showDialog(DIALOG_SHOW_ABOUT);
             return true;
         case R.id.MENU_BOOKMARKS:
             showBookmarks();
             return true;
         case R.id.MENU_SEARCH_TITLE:
-            //searchByTitle();
             showDialog(DIALOG_SEARCH_BY_TITLE);
             return true;
         }
@@ -463,11 +452,11 @@ public class XkcdViewerActivity extends Activity {
     }
 
     public String getCurrentComicUrl() {
-        return "http://xkcd.com/"+Integer.toString(currentComicNumber())+"/";
+        return comicInfo.getUrl();
     }
 
     public void shareComicImage() {
-        if (comicInfo == null || comicInfo.img == null) {
+        if (comicInfo == null || comicInfo.getImage() == null) {
             toast("No image loaded.");
             return;
         }
@@ -506,7 +495,7 @@ public class XkcdViewerActivity extends Activity {
                 }
             }
             
-        }.start(this, "Saving image...", new Uri[]{comicInfo.img});
+        }.start(this, "Saving image...", new Uri[]{comicInfo.getImage()});
     }
     
     public void failed(final String reason) {
@@ -535,7 +524,7 @@ public class XkcdViewerActivity extends Activity {
         case DIALOG_SHOW_HOVER_TEXT:
             //Build and show the Hover Text dialog
             builder = new AlertDialog.Builder(XkcdViewerActivity.this);
-            builder.setMessage(comicInfo.alt);
+            builder.setMessage(comicInfo.getAlt());
             builder.setNeutralButton("Close", new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int which) {
                     dialog.dismiss();
@@ -582,7 +571,7 @@ public class XkcdViewerActivity extends Activity {
             builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int which) {
                     String query = input.getText().toString();
-                    Uri uri = Uri.parse("http://xkcd.com/archive/?q="+Uri.encode(query));
+                    Uri uri = Uri.parse("http://xkcd.com/archive/");
                     Intent i = new Intent(XkcdViewerActivity.this, ArchiveActivity.class);
                     i.setAction(Intent.ACTION_VIEW);
                     i.setData(uri);
@@ -630,7 +619,7 @@ public class XkcdViewerActivity extends Activity {
         case DIALOG_SHOW_HOVER_TEXT:
             //Get an alertdialog so we can edit it.
             AlertDialog adh = (AlertDialog) dialog;
-            adh.setMessage(comicInfo.alt);
+            adh.setMessage(comicInfo.getAlt());
             break;
         case DIALOG_FAILED:
             //Get the alertdialog for the failedDialog
@@ -662,34 +651,21 @@ public class XkcdViewerActivity extends Activity {
      * fetch* methods must be called in a background thread
      */
     
-    public int currentComicNumber() {
-        System.out.println("Current comic: "+Integer.toString(comicInfo.num));
-        return comicInfo.num;
+    public void goToFirst() {
+    	loadComic(createComicUri("1" /* TODO use comic provider */));
     }
-    
-    public void goToFirst() { loadComic(createComicUri(1)); }
     public void goToPrev() {
-        int n = currentComicNumber() - 1;
-        if (n == 404) {
-            // 404 is xkcd's error page!
-            n = 403;
-        }
-        loadComic(createComicUri(n));
+        loadComic(createComicUri(comicInfo.getPrevId()));
     }
     public void goToNext() {
-        int n = currentComicNumber() + 1;
-        if (n == 404) {
-            // 404 is xkcd's error page!
-            n = 405;
-        }
-        loadComic(createComicUri(n));
+        loadComic(createComicUri(comicInfo.getNextId()));
     }
     public void goToFinal() {
         loadComic(createFinalComicUri());
     }
     
-    public Uri createComicUri(int n) {
-        return Uri.parse("http://xkcd.com/"+Integer.toString(n)+"/info.0.json");
+    public Uri createComicUri(String id) {
+        return Uri.parse("http://xkcd.com/"+id+"/info.0.json");
     }
     public Uri createFinalComicUri() {
         return Uri.parse("http://xkcd.com/info.0.json");
@@ -735,17 +711,17 @@ public class XkcdViewerActivity extends Activity {
         String redirect = http.getHeaderField("Location");
         Matcher m = comicUrlPattern.matcher(redirect);
         if (m.matches()) {
-            return createComicUri(Integer.parseInt(m.group(2)));
+            return createComicUri(m.group(2));
         } else {
             return null;
         }
     }
     
     private class ComicInfoOrError {
-        public ComicInfo comicInfo = null;
+        public IComicInfo comicInfo = null;
         public Throwable e = null;
         public ComicInfoOrError(Throwable e) { this.e = e; }
-        public ComicInfoOrError(ComicInfo d) { comicInfo = d; }
+        public ComicInfoOrError(IComicInfo d) { comicInfo = d; }
     }
     
     public void loadComic(final Uri uri) {
@@ -764,13 +740,12 @@ public class XkcdViewerActivity extends Activity {
                 super.onPostExecute(result);
                 if (result.comicInfo != null) {
                     comicInfo = result.comicInfo;
-                    String numStr = Integer.toString(comicInfo.num);
-                    title.setText(numStr + " - " + comicInfo.title);
-                    comicIdSel.setText(numStr);
+                    title.setText(comicInfo.getTitle());
+                    comicIdSel.setText(comicInfo.getId());
                     refreshBookmarkBtn();
-                    setLastReadComic(comicInfo.num);
+                    setLastReadComic(comicInfo.getId());
                     
-                    loadComicImage(comicInfo.img);
+                    loadComicImage(comicInfo.getImage());
                 } else {
                     result.e.printStackTrace();
                     /* Syntaxhack pattern match against type of result.e: */
@@ -812,12 +787,12 @@ public class XkcdViewerActivity extends Activity {
         return sb.toString();
     }
     
-    public ComicInfo fetchComicInfo(Uri uri) throws IOException, JSONException,
+    public IComicInfo fetchComicInfo(Uri uri) throws IOException, JSONException,
         InterruptedException
     {
         String text = blockingReadUri(uri);
         JSONObject obj = (JSONObject)new JSONTokener(text).nextValue();
-        ComicInfo data = new ComicInfo();
+        XkcdComicInfo data = new XkcdComicInfo();
         data.img = Uri.parse(obj.getString("img"));
         data.alt = obj.getString("alt");
         data.num = obj.getInt("num");
@@ -858,13 +833,10 @@ public class XkcdViewerActivity extends Activity {
     
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        // TODO Auto-generated method stub
-        //super.onActivityResult(requestCode, resultCode, data);
-        
         if(requestCode == PICK_ARCHIVE_ITEM) {
             if(resultCode == RESULT_OK) {
                 // This means an archive item was picked. Display it.
-                loadComic(createComicUri(Integer.valueOf(data.getStringExtra(getPackageName() + "comicNumber"))));
+                loadComic(createComicUri(data.getStringExtra(getPackageName() + "comicId")));
             }
         }
     }
