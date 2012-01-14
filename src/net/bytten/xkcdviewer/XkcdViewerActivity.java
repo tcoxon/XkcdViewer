@@ -1,6 +1,6 @@
 /*
  *  xkcdViewer - Android app to view xkcd comics with hover text
- *  Copyright (C) 2009-2010 Tom Coxon, Tyler Breisacher, David McCullough,
+ *  Copyright (C) 2009-2012 Tom Coxon, Tyler Breisacher, David McCullough,
  *      Kristian Lundkvist.
  *  
  *  xkcd is Copyright (C) Randall Munroe.

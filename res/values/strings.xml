@@ -7,9 +7,9 @@
 <string name="app_prefs_label">Preferences - xkcdViewer</string>
 <string name="aboutText">
     xkcdViewer v%s. Application for viewing xkcd comics with hover text.\n\n
-    xkcdViewer Copyright (C) 2009-2011, Tom Coxon, Tyler Breisacher, David
+    xkcdViewer Copyright (C) 2009-2012, Tom Coxon, Tyler Breisacher, David
     McCullough, Kristian Lundkvist.\n\n
-    xkcd is Copyright (C) 2006 - 2011, Randall Munroe (http://xkcd.com)\n\n
+    xkcd is Copyright (C) 2006 - 2012, Randall Munroe (http://xkcd.com)\n\n
     Contains some menu icons from www.androidicons.com, licensed under a
     Creative Commons Attribution - Share Alike license.\n\n
     Application icon kindly donated by Johan Larsson.\n\n
