@@ -9,7 +9,10 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import net.bytten.xkcdviewer.ArchiveData.ArchiveItem;
+import net.bytten.comicviewer.IComicInfo;
+import net.bytten.comicviewer.IComicProvider;
+import net.bytten.comicviewer.Utility;
+import net.bytten.comicviewer.ArchiveData.ArchiveItem;
 
 import org.json.JSONObject;
 import org.json.JSONTokener;

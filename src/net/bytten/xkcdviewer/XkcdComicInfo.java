@@ -1,5 +1,6 @@
 package net.bytten.xkcdviewer;
 
+import net.bytten.comicviewer.IComicInfo;
 import android.net.Uri;
 
 public class XkcdComicInfo implements IComicInfo {

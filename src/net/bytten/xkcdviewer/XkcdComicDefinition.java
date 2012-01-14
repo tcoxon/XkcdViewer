@@ -2,6 +2,9 @@ package net.bytten.xkcdviewer;
 
 import java.util.regex.Pattern;
 
+import net.bytten.comicviewer.IComicDefinition;
+import net.bytten.comicviewer.IComicProvider;
+
 import android.net.Uri;
 
 public class XkcdComicDefinition implements IComicDefinition {
