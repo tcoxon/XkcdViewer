@@ -33,6 +33,8 @@ public class XkcdComicProvider implements IComicProvider {
 
     @Override
     public IComicInfo fetchComicInfo(Uri url) throws Exception {
+        // Uses xkcd's JSON interface
+        //      (http://xkcd.com/json.html) 
         String text = Utility.blockingReadUri(url);
         JSONObject obj = (JSONObject)new JSONTokener(text).nextValue();
         XkcdComicInfo data = new XkcdComicInfo();
@@ -64,6 +66,11 @@ public class XkcdComicProvider implements IComicProvider {
     @Override
     public String getFirstId() {
         return "1";
+    }
+
+    @Override
+    public IComicInfo createEmptyComicInfo() {
+        return new XkcdComicInfo();
     }
 
 }

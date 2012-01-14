@@ -6,7 +6,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLConnection;
 
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -92,4 +94,9 @@ public class Utility {
         }
     }
 
+    public static String getContentType(Uri uri) throws MalformedURLException, IOException {
+        URLConnection conn = new URL(uri.toString()).openConnection();
+        return conn.getContentType();
+    }
+    
 }

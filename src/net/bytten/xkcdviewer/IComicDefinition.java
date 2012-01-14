@@ -17,5 +17,6 @@ public interface IComicDefinition {
     public String getComicTitleAbbrev();
     public boolean idsAreNumbers();
     public IComicProvider getProvider();
+    public Uri getDonateUrl();
     
 }
