@@ -101,7 +101,7 @@ public class XkcdComicProvider implements IComicProvider {
                 while (m.find()) {
                     ArchiveItem item = new ArchiveItem();
                     item.comicId = m.group(1);
-                    item.title = m.group(3);
+                    item.title = item.comicId + " - " + m.group(3);
                     archiveItems.add(item);
                 }
 
