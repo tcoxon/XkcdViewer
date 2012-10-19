@@ -1,9 +1,7 @@
 package net.bytten.xkcdviewer;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
+import java.io.*;
+import java.net.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -112,6 +110,12 @@ public class XkcdComicProvider implements IComicProvider {
             br.close();
         }
         return archiveItems;
+    }
+
+    @Override
+    public Uri getExplainUrl(IComicInfo comic) {
+        return Uri.parse("http://www.explainxkcd.com/wiki/index.php?title="+
+                comic.getId());
     }
 
 }
