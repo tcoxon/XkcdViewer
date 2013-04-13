@@ -4,6 +4,7 @@ import java.io.*;
 import java.net.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -16,6 +17,7 @@ import org.json.JSONObject;
 import org.json.JSONTokener;
 
 import android.net.Uri;
+import android.util.Log;
 
 public class XkcdComicProvider implements IComicProvider {
 
@@ -62,13 +64,24 @@ public class XkcdComicProvider implements IComicProvider {
     public Uri fetchRandomComicUrl() throws Exception {
         HttpURLConnection http = (HttpURLConnection) new URL("http",
                 "dynamic.xkcd.com", "/random/comic").openConnection();
+        http.setInstanceFollowRedirects(false);
         String redirect = http.getHeaderField("Location");
-        Uri loc = Uri.parse(redirect);
-        if (def.isComicUrl(loc)) {
-            return comicDataUrlForUrl(loc);
-        } else {
-            return null;
+        if (redirect != null) {
+            Uri loc = Uri.parse(redirect);
+            if (def.isComicUrl(loc)) {
+                return comicDataUrlForUrl(loc);
+            }
         }
+        Log.w("headers", Integer.toString(http.getResponseCode()));
+        Map<String, List<String>> headers = http.getHeaderFields();
+        for (String key: headers.keySet()) {
+            if (key == null) continue;
+            Log.w("headers", key);
+            for (String val: headers.get(key)) {
+                Log.w("headers", "    "+val);
+            }
+        }
+        return null;
     }
 
     @Override
