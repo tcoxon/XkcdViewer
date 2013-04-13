@@ -52,11 +52,15 @@ public class XkcdComicProvider implements IComicProvider {
         //      (http://xkcd.com/json.html) 
         String text = Utility.blockingReadUri(url);
         JSONObject obj = (JSONObject)new JSONTokener(text).nextValue();
+        Log.d("json", obj.names().toString());
         XkcdComicInfo data = new XkcdComicInfo();
         data.img = Uri.parse(obj.getString("img"));
         data.alt = obj.getString("alt");
         data.num = obj.getInt("num");
         data.title = obj.getString("title");
+        if (obj.has("link") && obj.getString("link").length() > 0) {
+            data.link = Uri.parse(obj.getString("link"));
+        }
         return data;
     }
 

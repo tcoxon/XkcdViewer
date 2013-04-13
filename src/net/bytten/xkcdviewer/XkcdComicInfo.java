@@ -5,7 +5,7 @@ import android.net.Uri;
 
 public class XkcdComicInfo implements IComicInfo {
 
-    public Uri img;
+    public Uri img, link;
     public int num;
     public String title = "", alt = "";
     public boolean bookmarked;
@@ -59,6 +59,11 @@ public class XkcdComicInfo implements IComicInfo {
     @Override
     public void setBookmarked(boolean b) {
         bookmarked = b;
+    }
+
+    @Override
+    public Uri getLink() {
+        return link;
     }
 
 }
