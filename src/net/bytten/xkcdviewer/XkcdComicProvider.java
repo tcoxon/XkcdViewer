@@ -55,7 +55,8 @@ public class XkcdComicProvider implements IComicProvider {
         Log.d("json", obj.names().toString());
         XkcdComicInfo data = new XkcdComicInfo();
         data.img = Uri.parse(obj.getString("img"));
-        data.alt = obj.getString("alt");
+        byte [] encodedAlt = obj.getString("alt").getBytes("ISO-8859-1");
+        data.alt = new String(encodedAlt, "UTF-8");
         data.num = obj.getInt("num");
         data.title = obj.getString("title");
         if (obj.has("link") && obj.getString("link").length() > 0) {
