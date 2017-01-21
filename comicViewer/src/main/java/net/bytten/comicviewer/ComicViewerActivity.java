@@ -521,9 +521,8 @@ public abstract class ComicViewerActivity extends Activity {
             @Override
             protected File doInBackground(Uri... params) {
                 try {
-                    File file = File.createTempFile(
-                            comicDef.getComicTitleAbbrev()+"-attachment-",
-                            params[0].getLastPathSegment());
+                    File file = new File(getApplicationContext().getExternalCacheDir(),
+                            comicDef.getComicTitleAbbrev()+"-"+params[0].getLastPathSegment());
                     Utility.blockingSaveFile(file, params[0]);
                     return file;
 
