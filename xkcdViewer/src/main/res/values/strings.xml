@@ -7,18 +7,20 @@
 <string name="app_prefs_label">Preferences - xkcdViewer</string>
 <string name="aboutText">
     xkcdViewer v%s. Application for viewing xkcd comics with hover text.\n\n
-    xkcdViewer Copyright (C) 2009-2012, Tom Coxon, Tyler Breisacher, David
+    xkcdViewer Copyright (C) 2009-2017, Tom Coxon, Tyler Breisacher, David
     McCullough, Kristian Lundkvist.\n\n
-    xkcd is Copyright (C) 2006 - 2012, Randall Munroe (http://xkcd.com)\n\n
+    xkcd is Copyright (C) 2006 - 2017, Randall Munroe (http://xkcd.com)\n\n
     Contains some menu icons from www.androidicons.com, licensed under a
     Creative Commons Attribution - Share Alike license.\n\n
     Application icon kindly donated by Johan Larsson.\n\n
-    See the github page for this project for more information:\n
+    You can fork this project on github:\n
     \thttp://github.com/tcoxon/XkcdViewer/\n\n
     This program is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
     more details.\n\n
-    If you like this app, please consider donating. Thanks.
+    If you like this app, please consider donating. Thanks.\n\n
+    Developed by Bytten Studio\n
+    \thttp://bytten-studio.com
 </string>
 </resources>
