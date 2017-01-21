@@ -6,6 +6,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -19,19 +20,44 @@ import android.os.AsyncTask;
 
 public class Utility {
 
+    public static URLConnection openRedirectableConnection(URL url) throws IOException {
+        return openRedirectableConnection(url, 0);
+    }
+
+    private static URLConnection openRedirectableConnection(URL url, int redirects) throws IOException {
+        URLConnection conn = url.openConnection();
+        if (conn instanceof HttpURLConnection) {
+            HttpURLConnection http = (HttpURLConnection)conn;
+            int status = http.getResponseCode();
+            if (status == HttpURLConnection.HTTP_MOVED_TEMP || status == HttpURLConnection.HTTP_MOVED_PERM || status == HttpURLConnection.HTTP_SEE_OTHER) {
+                if (redirects > 2)
+                    throw new IOException("Too many HTTP redirects");
+                String location = http.getHeaderField("Location");
+                if (location == null)
+                    throw new IOException("Invalid redirect");
+                return openRedirectableConnection(new URL(location), redirects + 1);
+            }
+        }
+        return conn;
+    }
+
     public static String blockingReadUri(Uri uri) throws IOException,
         InterruptedException
     {
-        StringBuffer sb = new StringBuffer();
-        BufferedReader br = new BufferedReader(new InputStreamReader(
-                new URL(uri.toString()).openStream()));
-        String line;
-        while ((line = br.readLine()) != null) {
-            sb.append(line);
-            sb.append('\n');
-            Utility.allowInterrupt();
+        InputStream is = openRedirectableConnection(new URL(uri.toString())).getInputStream();
+        try {
+            StringBuffer sb = new StringBuffer();
+            BufferedReader br = new BufferedReader(new InputStreamReader(is));
+            String line;
+            while ((line = br.readLine()) != null) {
+                sb.append(line);
+                sb.append('\n');
+                Utility.allowInterrupt();
+            }
+            return sb.toString();
+        } finally {
+            is.close();
         }
-        return sb.toString();
     }
 
     public static void allowInterrupt() throws InterruptedException {
@@ -84,7 +110,7 @@ public class Utility {
         InputStream is = null;
         try {
             fos = new FileOutputStream(file);
-            is = new URL(uri.toString()).openStream();
+            is = openRedirectableConnection(new URL(uri.toString())).getInputStream();
 
             byte[] buffer = new byte[512];
             int count = -1;

@@ -26,6 +26,8 @@
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="http" android:host="xkcd.com" />
                 <data android:scheme="http" android:host="www.xkcd.com" />
+                <data android:scheme="https" android:host="xkcd.com" />
+                <data android:scheme="https" android:host="www.xkcd.com" />
             </intent-filter>
         </activity>
         <activity android:label="@string/app_archive_label"

@@ -37,7 +37,7 @@ public class XkcdComicProvider implements IComicProvider {
         Matcher m = XkcdComicDefinition.comicUrlPattern
             .matcher(url.toString());
         if (m.matches())
-            return createComicUrl(m.group(2));
+            return createComicUrl(m.group(3));
         return null;
     }
 
@@ -67,7 +67,7 @@ public class XkcdComicProvider implements IComicProvider {
 
     @Override
     public Uri fetchRandomComicUrl() throws Exception {
-        HttpURLConnection http = (HttpURLConnection) new URL("http",
+        HttpURLConnection http = (HttpURLConnection) new URL("https",
                 "dynamic.xkcd.com", "/random/comic").openConnection();
         http.setInstanceFollowRedirects(false);
         String redirect = http.getHeaderField("Location");
@@ -108,7 +108,7 @@ public class XkcdComicProvider implements IComicProvider {
     public List<ArchiveItem> fetchArchive() throws Exception {
         List<ArchiveItem> archiveItems = new ArrayList<ArchiveItem>();
         URL url = new URL(ARCHIVE_URL);
-        BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream()));
+        BufferedReader br = new BufferedReader(new InputStreamReader(Utility.openRedirectableConnection(url).getInputStream()));
 
         try {
             String line;

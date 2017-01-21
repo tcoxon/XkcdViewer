@@ -11,11 +11,11 @@ public class XkcdComicDefinition implements IComicDefinition {
 
     static public final Pattern
         xkcdHomePattern = Pattern.compile(
-            "http://(www\\.)?xkcd\\.com(/)?"),
+            "http(s?)://(www\\.)?xkcd\\.com(/)?"),
         comicUrlPattern = Pattern.compile(
-            "http://(www\\.)?xkcd\\.com/([0-9]+)(/)?"),
+            "http(s?)://(www\\.)?xkcd\\.com/([0-9]+)(/)?"),
         archiveUrlPattern = Pattern.compile(
-            "http://(www\\.)?xkcd\\.com/archive(/)?");
+            "http(s?)://(www\\.)?xkcd\\.com/archive(/)?");
 
     private XkcdComicProvider provider;
     
