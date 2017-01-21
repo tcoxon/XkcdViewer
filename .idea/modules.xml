@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/XkcdViewer.iml" filepath="$PROJECT_DIR$/XkcdViewer.iml" />
+      <module fileurl="file://$PROJECT_DIR$/comicViewer/comicViewer.iml" filepath="$PROJECT_DIR$/comicViewer/comicViewer.iml" />
+      <module fileurl="file://$PROJECT_DIR$/xkcdViewer/xkcdViewer.iml" filepath="$PROJECT_DIR$/xkcdViewer/xkcdViewer.iml" />
+    </modules>
+  </component>
+</project>

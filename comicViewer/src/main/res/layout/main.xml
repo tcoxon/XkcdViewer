@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:id="@+id/mainLayout"
+    >
+
+    <RelativeLayout android:orientation="horizontal"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        >
+        <ImageView
+   	       android:layout_alignParentLeft="true"
+           android:id="@+id/bookmarkBtn"
+           android:background="@android:drawable/btn_star_big_off"
+           android:layout_width="wrap_content"
+           android:layout_height="wrap_content"
+           />
+        <ImageView
+            android:layout_alignParentRight="true"
+            android:id="@+id/randomBtn"
+            android:src="@drawable/ic_menu_dice"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+	    <RelativeLayout android:orientation="horizontal"
+	        android:layout_toLeftOf="@id/randomBtn"
+	        android:layout_toRightOf="@id/bookmarkBtn"
+	        android:layout_width="fill_parent"
+	        android:layout_height="wrap_content"
+	        >
+	        <Button android:text=" « " android:id="@+id/firstBtn"
+	            android:layout_alignParentLeft="true"
+	            android:visibility="gone"
+	            android:layout_width="wrap_content" android:layout_height="wrap_content" />
+	        <Button android:text=" » " android:id="@+id/finalBtn"
+	            android:layout_alignParentRight="true"
+	            android:layout_width="wrap_content" android:layout_height="wrap_content" />
+            <RelativeLayout android:orientation="horizontal"
+                android:layout_toLeftOf="@id/finalBtn"
+                android:layout_toRightOf="@id/firstBtn"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                >
+                <Button android:text=" &lt; " android:id="@+id/prevBtn"
+                    android:layout_alignParentLeft="true"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                <Button android:text=" &gt; " android:id="@+id/nextBtn"
+                    android:layout_alignParentRight="true"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                <EditText android:hint="Comic ID" android:id="@+id/comicIdSel"
+                    android:layout_toLeftOf="@id/nextBtn"
+                    android:layout_toRightOf="@id/prevBtn"
+                    android:singleLine="true"
+                    android:imeOptions="actionGo"
+                    android:layout_width="fill_parent" android:layout_height="wrap_content" />
+            </RelativeLayout>
+	    </RelativeLayout>
+    </RelativeLayout>
+
+    <TextView android:id="@+id/title"
+        android:layout_width="fill_parent" android:layout_height="wrap_content" />
+    
+    <net.bytten.comicviewer.HackedWebView android:id="@+id/viewer"
+            android:layout_width="fill_parent" android:layout_height="fill_parent" />
+    
+</LinearLayout>
