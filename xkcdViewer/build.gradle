@@ -1,7 +1,7 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 12
+    compileSdkVersion 10
     buildToolsVersion "25.0.2"
 
     defaultConfig {
@@ -15,6 +15,9 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
         }
+    }
+    compileOptions {
+        targetCompatibility JavaVersion.VERSION_1_6
     }
 }
 

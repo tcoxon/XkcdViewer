@@ -29,6 +29,9 @@ public class Utility {
         if (conn instanceof HttpURLConnection) {
             HttpURLConnection http = (HttpURLConnection)conn;
             int status = http.getResponseCode();
+            if (status == -1) {
+                throw new IOException("A certificate failure occurred. Make sure your device is fully up to date."); // In practice, that seems to be when this HTTP failure occurs
+            }
             if (status == HttpURLConnection.HTTP_MOVED_TEMP || status == HttpURLConnection.HTTP_MOVED_PERM || status == HttpURLConnection.HTTP_SEE_OTHER) {
                 if (redirects > 2)
                     throw new IOException("Too many HTTP redirects");
