@@ -469,6 +469,14 @@ public abstract class ComicViewerActivity extends Activity {
         startActivity(browser);
     }
 
+    public void developerWebsite() {
+        Intent browser = new Intent();
+        browser.setAction(Intent.ACTION_VIEW);
+        browser.addCategory(Intent.CATEGORY_BROWSABLE);
+        browser.setData(comicDef.getDeveloperUrl());
+        startActivity(browser);
+    }
+
     public void launchWebsite() {
         Intent browser = new Intent();
         browser.setAction(Intent.ACTION_VIEW);
@@ -597,6 +605,11 @@ public abstract class ComicViewerActivity extends Activity {
             builder.setNeutralButton("Donate", new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int which) {
                     donate();
+                }
+            });
+            builder.setPositiveButton("Developer Website", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int which) {
+                    developerWebsite();
                 }
             });
             View v = LayoutInflater.from(this).inflate(R.layout.about, null);

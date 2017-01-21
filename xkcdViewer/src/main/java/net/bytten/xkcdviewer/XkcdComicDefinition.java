@@ -93,4 +93,9 @@ public class XkcdComicDefinition implements IComicDefinition {
         return Uri.parse("https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=C9JRVA3NTULSL&lc=US&item_name=XkcdViewer%20donation&item_number=xkcdviewer&currency_code=USD");
     }
 
+    @Override
+    public Uri getDeveloperUrl() {
+        return Uri.parse("http://bytten-studio.com");
+    }
+
 }

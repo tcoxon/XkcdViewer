@@ -18,5 +18,6 @@ public interface IComicDefinition {
     public boolean idsAreNumbers();
     public IComicProvider getProvider();
     public Uri getDonateUrl();
-    
+    public Uri getDeveloperUrl();
+
 }
