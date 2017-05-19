@@ -48,7 +48,7 @@ public class XkcdComicInfo implements IComicInfo {
 
     @Override
     public String getUrl() {
-        return "http://xkcd.com/"+getId()+"/";
+        return "https://xkcd.com/"+getId()+"/";
     }
 
     @Override
