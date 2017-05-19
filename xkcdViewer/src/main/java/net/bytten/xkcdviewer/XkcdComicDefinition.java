@@ -25,7 +25,7 @@ public class XkcdComicDefinition implements IComicDefinition {
     
     @Override
     public Uri getArchiveUrl() {
-        return Uri.parse("http://xkcd.com/archive/");
+        return Uri.parse("https://xkcd.com/archive/");
     }
 
     @Override
@@ -35,7 +35,7 @@ public class XkcdComicDefinition implements IComicDefinition {
 
     @Override
     public Uri getAuthorLinkUrl() {
-        return Uri.parse("http://store.xkcd.com/");
+        return Uri.parse("https://store.xkcd.com/");
     }
 
     @Override

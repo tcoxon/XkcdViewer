@@ -24,7 +24,7 @@ public class XkcdComicProvider implements IComicProvider {
     private static final Pattern archiveItemPattern = Pattern.compile(
             // group(1): comic number;   group(2): date;   group(3): title
             "\\s*<a href=\"/(\\d+)/\" title=\"(\\d+-\\d+-\\d+)\">([^<]+)</a><br/>\\s*");
-    private static final String ARCHIVE_URL = "http://www.xkcd.com/archive/";
+    private static final String ARCHIVE_URL = "https://www.xkcd.com/archive/";
     
     private XkcdComicDefinition def;
     
@@ -43,13 +43,13 @@ public class XkcdComicProvider implements IComicProvider {
 
     @Override
     public Uri createComicUrl(String comicId) {
-        return Uri.parse("http://xkcd.com/"+comicId+"/info.0.json");
+        return Uri.parse("https://xkcd.com/"+comicId+"/info.0.json");
     }
 
     @Override
     public IComicInfo fetchComicInfo(Uri url) throws Exception {
         // Uses xkcd's JSON interface
-        //      (http://xkcd.com/json.html) 
+        //      (https://xkcd.com/json.html) 
         String text = Utility.blockingReadUri(url);
         JSONObject obj = (JSONObject)new JSONTokener(text).nextValue();
         Log.d("json", obj.names().toString());
@@ -91,7 +91,7 @@ public class XkcdComicProvider implements IComicProvider {
 
     @Override
     public Uri getFinalComicUrl() {
-        return Uri.parse("http://xkcd.com/info.0.json");
+        return Uri.parse("https://xkcd.com/info.0.json");
     }
 
     @Override
